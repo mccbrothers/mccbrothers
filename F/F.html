@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vault Pro - Anime Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vault Pro</title>
     
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#050505">
 
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/508/508757.png">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/508/508757.png">
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22VaultPro%22,%22short_name%22:%22Vault%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22%23050505%22,%22theme_color%22:%22%2300f2ff%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/508/508757.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
+    <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/KzpxmHxP/1768409613506.jpg">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/KzpxmHxP/1768409613506.jpg">
+    
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22VaultPro%22,%22short_name%22:%22Vault%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22%23050505%22,%22theme_color%22:%22%2300f2ff%22,%22icons%22:[{%22src%22:%22https://i.postimg.cc/KzpxmHxP/1768409613506.jpg%22,%22sizes%22:%22512x512%22,%22type%22:%22image/jpeg%22}]}">
 
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -22,11 +23,10 @@
             --primary-neon: #00f2ff;
             --glass: rgba(20, 20, 30, 0.95);
             --glass-border: rgba(255, 255, 255, 0.1);
-            --text-glow: 0 0 10px rgba(0, 242, 255, 0.5);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: #050505; color: white; overflow-x: hidden; }
+        body { background: #050505; color: white; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
 
         .bg-animate {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -45,7 +45,7 @@
         .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
         .brand h1 { font-family: 'Syncopate', sans-serif; font-size: 20px; letter-spacing: 1px; }
         .brand h1 span { color: var(--primary-neon); }
-        .neon-text { color: var(--primary-neon); font-size: 25px; filter: drop-shadow(var(--text-glow)); }
+        .neon-text { color: var(--primary-neon); font-size: 25px; }
 
         .admin-toggle { margin-left: auto; color: var(--primary-neon); font-size: 22px; cursor: pointer; }
 
@@ -59,7 +59,6 @@
         }
 
         .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .filter-bar::-webkit-scrollbar { display: none; }
         .filter-item {
             background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
             color: #888; padding: 8px 16px; border-radius: 10px; white-space: nowrap; cursor: pointer;
@@ -73,8 +72,7 @@
         }
         .card-head { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .card-head img { width: 55px; height: 55px; border-radius: 15px; border: 2px solid var(--primary-neon); padding: 2px; background: #111; }
-        .acc-tag { color: var(--primary-neon); font-size: 10px; font-weight: 800; text-transform: uppercase; }
-
+        
         .data-row {
             background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
             padding: 12px 15px; border-radius: 15px; margin-top: 10px;
@@ -86,9 +84,8 @@
         .copy-btn {
             background: rgba(0, 242, 255, 0.1); color: var(--primary-neon);
             border: 1px solid var(--primary-neon); width: 35px; height: 35px;
-            border-radius: 10px; cursor: pointer; transition: 0.2s;
+            border-radius: 10px; cursor: pointer;
         }
-        .copy-btn:active { background: var(--primary-neon); color: black; }
 
         #admin-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -129,20 +126,17 @@
             
             <div class="search-container">
                 <i class="fas fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search by name, phone or email..." onkeyup="searchData()">
+                <input type="text" id="searchInput" placeholder="Search..." onkeyup="searchData()">
             </div>
 
             <nav class="filter-bar" id="filterBar">
                 <button class="filter-item active" onclick="filterData('all')">All</button>
                 <button class="filter-item" onclick="filterData('facebook')">Facebook</button>
                 <button class="filter-item" onclick="filterData('gmail')">Gmail</button>
-                <button class="filter-item" onclick="filterData('tiktok')">TikTok</button>
             </nav>
         </header>
 
-        <main id="account-container" class="cards-grid">
-            <p style="text-align: center; margin-top: 50px; color: #888;">Synchronizing with secure cloud...</p>
-        </main>
+        <main id="account-container" class="cards-grid"></main>
     </div>
 
     <div id="admin-overlay">
@@ -153,10 +147,10 @@
                 <option value="Gmail">Gmail</option>
                 <option value="TikTok">TikTok</option>
             </select>
-            <input type="text" id="new-name" placeholder="Account Holder Name">
-            <input type="text" id="new-phone" placeholder="Email or Phone Number">
+            <input type="text" id="new-name" placeholder="Name">
+            <input type="text" id="new-phone" placeholder="Email/Phone">
             <input type="text" id="new-pass" placeholder="Password">
-            <input type="text" id="new-img" placeholder="Image URL (Leave empty for Anime Avatar)">
+            <input type="text" id="new-img" placeholder="Image URL">
             <button class="save-btn" onclick="saveData()">SAVE TO VAULT</button>
             <p onclick="toggleAdmin()" style="text-align: center; margin-top: 15px; cursor: pointer; color: #888;">Discard Changes</p>
         </div>
@@ -174,32 +168,23 @@
                 masterData = await res.json();
                 renderCards(masterData);
             } catch (e) { 
-                document.getElementById('account-container').innerHTML = "<p style='text-align:center;'>Failed to load data. Check connection.</p>";
+                document.getElementById('account-container').innerHTML = "<p style='text-align:center;'>Check connection.</p>";
             }
         }
 
         function renderCards(data) {
             const container = document.getElementById('account-container');
             container.innerHTML = "";
-            const categoryCounters = {};
-
             data.forEach((item) => {
-                const type = (item.account_type || "Other").toLowerCase().trim();
-                if (!categoryCounters[type]) categoryCounters[type] = 0;
-                categoryCounters[type]++;
-
-                const profileImg = item.img && item.img.trim() !== "" 
-                    ? item.img 
-                    : `https://api.dicebear.com/7.x/adventurer/svg?seed=${item.id_name || 'user'}`;
-
+                const profileImg = item.img || `https://api.dicebear.com/7.x/adventurer/svg?seed=${item.id_name}`;
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <div class="card-head">
-                        <img src="${profileImg}" alt="profile">
+                        <img src="${profileImg}">
                         <div>
-                            <h3>${item.id_name || 'No Name'}</h3>
-                            <span class="acc-tag">${item.account_type} - ${categoryCounters[type]}</span>
+                            <h3>${item.id_name}</h3>
+                            <span style="color:var(--primary-neon); font-size:10px;">${item.account_type}</span>
                         </div>
                     </div>
                     <div class="data-row">
@@ -216,27 +201,23 @@
         }
 
         function searchData() {
-            const q = document.getElementById('searchInput').value.toLowerCase().trim();
-            const filtered = masterData.filter(d => 
-                (d.id_name && d.id_name.toLowerCase().includes(q)) || 
-                (d.email_phone_number && d.email_phone_number.toString().toLowerCase().includes(q))
-            );
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = masterData.filter(d => d.id_name.toLowerCase().includes(q) || d.email_phone_number.toString().includes(q));
             renderCards(filtered);
         }
 
         function filterData(type) {
             document.querySelectorAll('.filter-item').forEach(b => b.classList.remove('active'));
-            if (window.event && window.event.target) window.event.target.classList.add('active');
-            const filtered = (type === 'all') ? masterData : masterData.filter(d => d.account_type && d.account_type.toLowerCase().trim() === type.toLowerCase());
+            if(window.event) window.event.target.classList.add('active');
+            const filtered = (type === 'all') ? masterData : masterData.filter(d => d.account_type.toLowerCase() === type);
             renderCards(filtered);
         }
 
         function copy(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const t = document.getElementById('toast');
-                t.style.display = 'block';
-                setTimeout(() => t.style.display = 'none', 2000);
-            });
+            navigator.clipboard.writeText(text);
+            const t = document.getElementById('toast');
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
         }
 
         function toggleAdmin() {
@@ -245,48 +226,24 @@
         }
 
         async function saveData() {
-            const btn = document.querySelector('.save-btn');
-            const name = document.getElementById('new-name').value;
-            const phone = document.getElementById('new-phone').value;
-            const pass = document.getElementById('new-pass').value;
-
-            if(!name || !phone || !pass) {
-                alert("Please fill all required fields!");
-                return;
-            }
-
-            btn.innerText = "Encrypting & Saving...";
-            btn.disabled = true;
-            
             const newData = {
                 account_type: document.getElementById('new-type').value,
-                id_name: name,
-                email_phone_number: phone,
-                pass: pass,
+                id_name: document.getElementById('new-name').value,
+                email_phone_number: document.getElementById('new-phone').value,
+                pass: document.getElementById('new-pass').value,
                 img: document.getElementById('new-img').value
             };
-
-            try {
-                const res = await fetch(apiURL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({data: [newData]})
-                });
-                if(res.ok) {
-                    toggleAdmin();
-                    document.getElementById('new-name').value = "";
-                    document.getElementById('new-phone').value = "";
-                    document.getElementById('new-pass').value = "";
-                    document.getElementById('new-img').value = "";
-                    loadData(); 
-                }
-            } catch (e) { alert("Server error! Data not saved."); }
-            btn.innerText = "SAVE TO VAULT";
-            btn.disabled = false;
+            await fetch(apiURL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({data: [newData]})
+            });
+            toggleAdmin();
+            loadData();
         }
 
         window.onload = loadData;
     </script>
 </body>
-      </html>
-  
+                    </html>
+                                             
