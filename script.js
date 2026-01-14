@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loaderWrapper.classList.remove('loader-hidden');
 
     // API URLs
-    const GOOGLE_SHEETS_API_URL = 'https://sheetdb.io/api/v1/w51cfqk66hrnb'; 
-    const IMAGE_API_URL = 'https://sheetdb.io/api/v1/w51cfqk66hrnb?sheet=sheet2'; 
+    const GOOGLE_SHEETS_API_URL = 'https://sheetdb.io/api/v1/k46dxr1ihv00r'; 
+    const IMAGE_API_URL = 'https://sheetdb.io/api/v1/k46dxr1ihv00r?sheet=sheet2'; 
 
     const pages = {
         home: `
