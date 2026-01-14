@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault Pro - Anime Edition</title>
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#050505">
+
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/508/508757.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/508/508757.png">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22VaultPro%22,%22short_name%22:%22Vault%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22%23050505%22,%22theme_color%22:%22%2300f2ff%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/508/508757.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-neon: #00f2ff;
+            --glass: rgba(20, 20, 30, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-glow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #050505; color: white; overflow-x: hidden; }
+
+        .bg-animate {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%);
+            z-index: -1;
+        }
+
+        .wrapper { max-width: 600px; margin: 0 auto; }
+
+        header {
+            background: var(--glass); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border); padding: 20px;
+            position: sticky; top: 0; z-index: 1000; border-radius: 0 0 25px 25px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .brand h1 { font-family: 'Syncopate', sans-serif; font-size: 20px; letter-spacing: 1px; }
+        .brand h1 span { color: var(--primary-neon); }
+        .neon-text { color: var(--primary-neon); font-size: 25px; filter: drop-shadow(var(--text-glow)); }
+
+        .admin-toggle { margin-left: auto; color: var(--primary-neon); font-size: 22px; cursor: pointer; }
+
+        .search-container {
+            background: rgba(0,0,0,0.4); border-radius: 12px; padding: 10px 15px;
+            display: flex; align-items: center; border: 1px solid var(--glass-border); margin-bottom: 15px;
+        }
+
+        .search-container input {
+            background: none; border: none; outline: none; color: white; width: 100%; margin-left: 10px;
+        }
+
+        .filter-bar { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .filter-bar::-webkit-scrollbar { display: none; }
+        .filter-item {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            color: #888; padding: 8px 16px; border-radius: 10px; white-space: nowrap; cursor: pointer;
+        }
+        .filter-item.active { background: var(--primary-neon); color: black; font-weight: bold; }
+
+        .cards-grid { padding: 20px; }
+        .card {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 20px; margin-bottom: 15px; position: relative;
+        }
+        .card-head { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .card-head img { width: 55px; height: 55px; border-radius: 15px; border: 2px solid var(--primary-neon); padding: 2px; background: #111; }
+        .acc-tag { color: var(--primary-neon); font-size: 10px; font-weight: 800; text-transform: uppercase; }
+
+        .data-row {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+            padding: 12px 15px; border-radius: 15px; margin-top: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .label-group small { color: var(--primary-neon); font-size: 9px; text-transform: uppercase; font-weight: bold; }
+        .label-group span { font-size: 13px; display: block; margin-top: 2px; word-break: break-all; }
+
+        .copy-btn {
+            background: rgba(0, 242, 255, 0.1); color: var(--primary-neon);
+            border: 1px solid var(--primary-neon); width: 35px; height: 35px;
+            border-radius: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .copy-btn:active { background: var(--primary-neon); color: black; }
+
+        #admin-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 2000; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .admin-form {
+            background: #161b22; padding: 25px; border-radius: 20px;
+            width: 100%; max-width: 400px; border: 1px solid var(--primary-neon);
+        }
+        .admin-form input, .admin-form select {
+            width: 100%; padding: 12px; margin: 10px 0; background: #0d1117;
+            border: 1px solid #30363d; color: white; border-radius: 8px;
+        }
+        .save-btn {
+            width: 100%; padding: 15px; background: var(--primary-neon);
+            color: black; font-weight: bold; border: none; border-radius: 10px; cursor: pointer;
+        }
+
+        .toast-notification {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--primary-neon); color: black; padding: 12px 25px;
+            border-radius: 50px; font-weight: 800; display: none; z-index: 3000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animate"></div>
+
+    <div class="wrapper">
+        <header>
+            <div class="brand">
+                <i class="fas fa-fingerprint neon-text"></i>
+                <h1>VAULT<span>PRO</span></h1>
+                <i class="fas fa-plus-circle admin-toggle" onclick="toggleAdmin()"></i>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by name, phone or email..." onkeyup="searchData()">
+            </div>
+
+            <nav class="filter-bar" id="filterBar">
+                <button class="filter-item active" onclick="filterData('all')">All</button>
+                <button class="filter-item" onclick="filterData('facebook')">Facebook</button>
+                <button class="filter-item" onclick="filterData('gmail')">Gmail</button>
+                <button class="filter-item" onclick="filterData('tiktok')">TikTok</button>
+            </nav>
+        </header>
+
+        <main id="account-container" class="cards-grid">
+            <p style="text-align: center; margin-top: 50px; color: #888;">Synchronizing with secure cloud...</p>
+        </main>
+    </div>
+
+    <div id="admin-overlay">
+        <div class="admin-form">
+            <h2 style="color:var(--primary-neon); margin-bottom: 15px; text-align: center;">Add Secure Account</h2>
+            <select id="new-type">
+                <option value="Facebook">Facebook</option>
+                <option value="Gmail">Gmail</option>
+                <option value="TikTok">TikTok</option>
+            </select>
+            <input type="text" id="new-name" placeholder="Account Holder Name">
+            <input type="text" id="new-phone" placeholder="Email or Phone Number">
+            <input type="text" id="new-pass" placeholder="Password">
+            <input type="text" id="new-img" placeholder="Image URL (Leave empty for Anime Avatar)">
+            <button class="save-btn" onclick="saveData()">SAVE TO VAULT</button>
+            <p onclick="toggleAdmin()" style="text-align: center; margin-top: 15px; cursor: pointer; color: #888;">Discard Changes</p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast-notification">Copied to Clipboard!</div>
+
+    <script>
+        const apiURL = "https://sheetdb.io/api/v1/k46dxr1ihv00r?sheet=Sheet5";
+        let masterData = [];
+
+        async function loadData() {
+            try {
+                const res = await fetch(apiURL);
+                masterData = await res.json();
+                renderCards(masterData);
+            } catch (e) { 
+                document.getElementById('account-container').innerHTML = "<p style='text-align:center;'>Failed to load data. Check connection.</p>";
+            }
+        }
+
+        function renderCards(data) {
+            const container = document.getElementById('account-container');
+            container.innerHTML = "";
+            const categoryCounters = {};
+
+            data.forEach((item) => {
+                const type = (item.account_type || "Other").toLowerCase().trim();
+                if (!categoryCounters[type]) categoryCounters[type] = 0;
+                categoryCounters[type]++;
+
+                const profileImg = item.img && item.img.trim() !== "" 
+                    ? item.img 
+                    : `https://api.dicebear.com/7.x/adventurer/svg?seed=${item.id_name || 'user'}`;
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-head">
+                        <img src="${profileImg}" alt="profile">
+                        <div>
+                            <h3>${item.id_name || 'No Name'}</h3>
+                            <span class="acc-tag">${item.account_type} - ${categoryCounters[type]}</span>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="label-group"><small>Identity</small><span>${item.email_phone_number}</span></div>
+                        <button class="copy-btn" onclick="copy('${item.email_phone_number}')"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="data-row">
+                        <div class="label-group"><small>Password</small><span>${item.pass}</span></div>
+                        <button class="copy-btn" onclick="copy('${item.pass}')"><i class="fas fa-copy"></i></button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function searchData() {
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filtered = masterData.filter(d => 
+                (d.id_name && d.id_name.toLowerCase().includes(q)) || 
+                (d.email_phone_number && d.email_phone_number.toString().toLowerCase().includes(q))
+            );
+            renderCards(filtered);
+        }
+
+        function filterData(type) {
+            document.querySelectorAll('.filter-item').forEach(b => b.classList.remove('active'));
+            if (window.event && window.event.target) window.event.target.classList.add('active');
+            const filtered = (type === 'all') ? masterData : masterData.filter(d => d.account_type && d.account_type.toLowerCase().trim() === type.toLowerCase());
+            renderCards(filtered);
+        }
+
+        function copy(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const t = document.getElementById('toast');
+                t.style.display = 'block';
+                setTimeout(() => t.style.display = 'none', 2000);
+            });
+        }
+
+        function toggleAdmin() {
+            const overlay = document.getElementById('admin-overlay');
+            overlay.style.display = (overlay.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        async function saveData() {
+            const btn = document.querySelector('.save-btn');
+            const name = document.getElementById('new-name').value;
+            const phone = document.getElementById('new-phone').value;
+            const pass = document.getElementById('new-pass').value;
+
+            if(!name || !phone || !pass) {
+                alert("Please fill all required fields!");
+                return;
+            }
+
+            btn.innerText = "Encrypting & Saving...";
+            btn.disabled = true;
+            
+            const newData = {
+                account_type: document.getElementById('new-type').value,
+                id_name: name,
+                email_phone_number: phone,
+                pass: pass,
+                img: document.getElementById('new-img').value
+            };
+
+            try {
+                const res = await fetch(apiURL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({data: [newData]})
+                });
+                if(res.ok) {
+                    toggleAdmin();
+                    document.getElementById('new-name').value = "";
+                    document.getElementById('new-phone').value = "";
+                    document.getElementById('new-pass').value = "";
+                    document.getElementById('new-img').value = "";
+                    loadData(); 
+                }
+            } catch (e) { alert("Server error! Data not saved."); }
+            btn.innerText = "SAVE TO VAULT";
+            btn.disabled = false;
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+      </html>
+  
