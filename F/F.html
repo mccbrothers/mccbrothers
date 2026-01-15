@@ -35,7 +35,29 @@
             z-index: -1;
         }
 
-        .wrapper { max-width: 600px; margin: 0 auto; }
+        /* Login Overlay Styling */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #050505; z-index: 5000; display: flex;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .login-box {
+            background: var(--glass); border: 1px solid var(--primary-neon);
+            padding: 30px; border-radius: 25px; width: 100%; max-width: 350px;
+            text-align: center; box-shadow: var(--text-glow);
+        }
+        .login-box h2 { font-family: 'Syncopate', sans-serif; font-size: 18px; margin-bottom: 20px; color: var(--primary-neon); }
+        .login-box input {
+            width: 100%; padding: 12px; margin: 10px 0; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border); color: white; border-radius: 10px; outline: none;
+        }
+        .login-box input:focus { border-color: var(--primary-neon); }
+        .login-btn {
+            width: 100%; padding: 12px; background: var(--primary-neon);
+            color: black; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; margin-top: 10px;
+        }
+
+        .wrapper { max-width: 600px; margin: 0 auto; display: none; } /* Hidden until login */
 
         header {
             background: var(--glass); backdrop-filter: blur(20px);
@@ -120,7 +142,18 @@
 
     <div class="bg-animate"></div>
 
-    <div class="wrapper">
+    <div id="login-overlay">
+        <div class="login-box">
+            <i class="fas fa-user-shield neon-text" style="font-size: 40px; margin-bottom: 10px;"></i>
+            <h2>VAULT ACCESS</h2>
+            <input type="email" id="login-email" placeholder="Email Address">
+            <input type="password" id="login-pass" placeholder="Master Password">
+            <button class="login-btn" onclick="checkLogin()">UNLOCK VAULT</button>
+            <p id="login-error" style="color: #ff4d4d; font-size: 12px; margin-top: 10px; display: none;">Invalid Credentials!</p>
+        </div>
+    </div>
+
+    <div class="wrapper" id="main-content">
         <header>
             <div class="brand">
                 <i class="fas fa-fingerprint neon-text"></i>
@@ -167,8 +200,30 @@
 
     <script>
         const apiURL = "https://sheetdb.io/api/v1/k46dxr1ihv00r?sheet=Sheet5";
-        const SECRET_KEY = "My_Super_Secret_Vault_Key_123"; // এই কী-টি কাউকে জানাবেন না
+        const SECRET_KEY = "My_Super_Secret_Vault_Key_123"; 
+        
+        // লগইন ক্রেডেনশিয়ালস
+        const MASTER_EMAIL = "nadimvai00420@gmail.com";
+        const MASTER_PASS = "25802";
+
         let masterData = [];
+
+        // লগইন চেক ফাংশন
+        function checkLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const errorMsg = document.getElementById('login-error');
+
+            if (email === MASTER_EMAIL && pass === MASTER_PASS) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                sessionStorage.setItem('isLoggedIn', 'true');
+                loadData(); // লগইন সফল হলে ডেটা লোড শুরু হবে
+            } else {
+                errorMsg.style.display = 'block';
+                setTimeout(() => { errorMsg.style.display = 'none'; }, 3000);
+            }
+        }
 
         // Encryption Helper
         function encrypt(text) {
@@ -186,11 +241,13 @@
         }
 
         async function loadData() {
+            // চেক করা হচ্ছে ইউজার লগইন করা কি না
+            if(sessionStorage.getItem('isLoggedIn') !== 'true') return;
+
             try {
                 const res = await fetch(apiURL);
                 const rawData = await res.json();
                 
-                // ডিক্রিপশন করে মাস্টার ডেটা তৈরি
                 masterData = rawData.map(item => ({
                     ...item,
                     email_phone_number: decrypt(item.email_phone_number),
@@ -206,8 +263,6 @@
         function renderCards(data) {
             const container = document.getElementById('account-container');
             container.innerHTML = "";
-            let count = 1;
-
             data.forEach((item) => {
                 const profileImg = item.img && item.img.trim() !== "" 
                     ? item.img 
@@ -238,9 +293,7 @@
 
         function searchData() {
             const q = document.getElementById('searchInput').value.toLowerCase().trim();
-            const filtered = masterData.filter(d => 
-                (d.id_name && d.id_name.toLowerCase().includes(q))
-            );
+            const filtered = masterData.filter(d => (d.id_name && d.id_name.toLowerCase().includes(q)));
             renderCards(filtered);
         }
 
@@ -278,7 +331,6 @@
             btn.innerText = "Securing Data...";
             btn.disabled = true;
             
-            // ডেটা পাঠানোর আগেই এনক্রিপ্ট করা হচ্ছে
             const encryptedPhone = encrypt(phone);
             const encryptedPass = encrypt(pass);
 
@@ -309,8 +361,15 @@
             btn.disabled = false;
         }
 
-        window.onload = loadData;
+        // পেজ লোড হওয়ার সময় চেক করবে আগে লগইন করা আছে কি না
+        window.onload = () => {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                loadData();
+            }
+        };
     </script>
 </body>
                     </html>
-                
+                    
