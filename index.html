@@ -1,1 +1,114 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adnan Sami Copy Version</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        #chat-container { width: 100%; max-width: 500px; height: 90vh; background: white; display: flex; flex-direction: column; border-radius: 15px; shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
+        #header { background: #0084ff; color: white; padding: 20px; text-align: center; font-size: 22px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        #messages-container { flex: 1; padding: 20px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 15px; }
+        .message { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; position: relative; }
+        .user { align-self: flex-end; background: #0084ff; color: white; border-bottom-right-radius: 2px; }
+        .bot { align-self: flex-start; background: #e4e6eb; color: #050505; border-bottom-left-radius: 2px; }
+        .typing { font-style: italic; font-size: 12px; color: #888; margin-bottom: 10px; display: none; }
+        #input-area { padding: 15px; background: white; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        #user-input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid #ddd; outline: none; font-size: 15px; transition: 0.3s; }
+        #user-input:focus { border-color: #0084ff; }
+        #send-btn { background: #0084ff; color: white; border: none; padding: 0 20px; border-radius: 25px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
 
+<div id="chat-container">
+    <div id="header">Adnan Sami Copy Version</div>
+    <div id="messages-container">
+        <div class="message bot">হ্যালো! আমি আদনান সামির কপি ভার্সন এআই। আমি আপনাকে কীভাবে সাহায্য করতে পারি?</div>
+    </div>
+    <div id="typing-indicator" class="typing" style="padding-left: 20px;">বট চিন্তা করছে...</div>
+    <div id="input-area">
+        <input type="text" id="user-input" placeholder="আপনার প্রশ্নটি লিখুন..." autocomplete="off">
+        <button id="send-btn">পাঠান</button>
+    </div>
+</div>
+
+<script>
+    const STEIN_API_URL = "https://api.steinhq.com/v1/storages/697e2548affba40a624455bf/Sheet1";
+    const GEMINI_API_KEY = "AIzaSyDyeiWvmi90-5dszjcmiDIfnTxCXVbMcDg"; 
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const container = document.getElementById('messages-container');
+    const input = document.getElementById('user-input');
+    const btn = document.getElementById('send-btn');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    function showMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+        div.innerText = text;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    // ১. গুগল শিটে উত্তর খোঁজা
+    async function checkSheet(userText) {
+        try {
+            const response = await fetch(STEIN_API_URL);
+            const data = await response.json();
+            const lowerText = userText.toLowerCase().trim();
+
+            for (let row of data) {
+                if (row.Keyword && row.Keyword.toLowerCase().split(',').some(k => lowerText.includes(k.trim()))) {
+                    return row.Response;
+                }
+            }
+            return null;
+        } catch (e) { return null; }
+    }
+
+    // ২. জেমিনি এআই থেকে উত্তর আনা
+    async function getAIResponse(userText) {
+        try {
+            const response = await fetch(GEMINI_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: userText }] }]
+                })
+            });
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) {
+            return "দুঃখিত, আমার সার্ভারে সমস্যা হচ্ছে। একটু পরে চেষ্টা করুন।";
+        }
+    }
+
+    async function handleChat() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        showMessage(text, 'user');
+        input.value = '';
+        typingIndicator.style.display = 'block';
+
+        // প্রথমে শিটে খোঁজা হবে
+        let reply = await checkSheet(text);
+
+        // যদি শিটে না পাওয়া যায়, তবে এআই উত্তর দেবে
+        if (!reply) {
+            reply = await getAIResponse(text);
+        }
+
+        typingIndicator.style.display = 'none';
+        showMessage(reply, 'bot');
+    }
+
+    btn.addEventListener('click', handleChat);
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChat(); });
+</script>
+
+</body>
+</html>
