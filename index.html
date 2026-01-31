@@ -8,7 +8,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Hind Siliguri', sans-serif; background: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        #chat-container { width: 100%; max-width: 500px; height: 90vh; background: white; display: flex; flex-direction: column; border-radius: 15px; shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
+        #chat-container { width: 100%; max-width: 500px; height: 90vh; background: white; display: flex; flex-direction: column; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden; }
         #header { background: #0084ff; color: white; padding: 20px; text-align: center; font-size: 22px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         #messages-container { flex: 1; padding: 20px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 15px; }
         .message { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; position: relative; }
@@ -53,17 +53,29 @@
         container.scrollTop = container.scrollHeight;
     }
 
-    // ১. গুগল শিটে উত্তর খোঁজা
+    // ১. গুগল শিটে র‍্যান্ডম উত্তর খোঁজা
     async function checkSheet(userText) {
         try {
             const response = await fetch(STEIN_API_URL);
             const data = await response.json();
             const lowerText = userText.toLowerCase().trim();
+            
+            let possibleReplies = [];
 
             for (let row of data) {
-                if (row.Keyword && row.Keyword.toLowerCase().split(',').some(k => lowerText.includes(k.trim()))) {
-                    return row.Response;
+                if (row.Keyword) {
+                    let keywords = row.Keyword.toLowerCase().split(',').map(k => k.trim());
+                    // কি-ওয়ার্ডের সাথে হুবহু মিললে বা কি-ওয়ার্ড মেসেজের ভেতর থাকলে তালিকায় যোগ করবে
+                    if (keywords.some(kw => lowerText === kw || lowerText.includes(kw))) {
+                        possibleReplies.push(row.Response);
+                    }
                 }
+            }
+
+            // যদি একাধিক উত্তর পাওয়া যায়, লটারি করে একটি বেছে নেবে
+            if (possibleReplies.length > 0) {
+                const randomIndex = Math.floor(Math.random() * possibleReplies.length);
+                return possibleReplies[randomIndex];
             }
             return null;
         } catch (e) { return null; }
@@ -94,7 +106,7 @@
         input.value = '';
         typingIndicator.style.display = 'block';
 
-        // প্রথমে শিটে খোঁজা হবে
+        // প্রথমে শিটে র‍্যান্ডম উত্তর খোঁজা হবে
         let reply = await checkSheet(text);
 
         // যদি শিটে না পাওয়া যায়, তবে এআই উত্তর দেবে
