@@ -6,125 +6,24 @@
     <title>Adnan's In-line Playlist</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Hind Siliguri', sans-serif; 
-            background: #0f172a; 
-            color: #fff;
-            margin: 0; 
-            padding: 0;
-        }
-
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: #0f172a;
-            padding: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
+        body { font-family: 'Hind Siliguri', sans-serif; background: #0f172a; color: #fff; margin: 0; padding: 0; }
+        .sticky-header { position: sticky; top: 0; z-index: 1000; background: #0f172a; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .header { text-align: center; padding: 10px 0; }
-        .logo { 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 28px; 
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            margin: 0;
-        }
-
-        .filter-container { 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-            margin: 10px auto; 
-            max-width: 1100px;
-        }
-
-        .gallery-link-btn {
-            background: linear-gradient(45deg, #f59e0b, #ef4444);
-            color: #fff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 14px;
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            transition: 0.3s;
-        }
-
-        .filter-btn { 
-            background: #1e293b; 
-            color: #cbd5e1;
-            border: 1px solid #334155; 
-            padding: 8px 20px; 
-            border-radius: 30px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            transition: 0.3s;
-            text-transform: capitalize;
-        }
-        
-        .filter-btn.active { 
-            background: #3b82f6; 
-            color: #fff; 
-            border-color: #3b82f6;
-        }
-
-        .gallery-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 20px; 
-            max-width: 1200px; 
-            margin: 20px auto; 
-            padding: 0 15px;
-        }
-
-        .card { 
-            background: #1e293b; 
-            border-radius: 15px; 
-            overflow: hidden; 
-            border: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s;
-        }
-
-        .video-container { 
-            width: 100%; 
-            height: 180px; 
-            background: #000; 
-            position: relative; 
-            cursor: pointer;
-        }
-        
-        .video-container img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-        }
-
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .play-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.3);
-        }
-
+        .logo { font-family: 'Poppins', sans-serif; font-size: 28px; background: linear-gradient(45deg, #00d2ff, #3a7bd5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        .filter-container { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 10px auto; max-width: 1100px; }
+        .gallery-link-btn { background: linear-gradient(45deg, #f59e0b, #ef4444); color: #fff; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-size: 14px; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; transition: 0.3s; }
+        .filter-btn { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-size: 14px; transition: 0.3s; text-transform: capitalize; }
+        .filter-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .card { background: #1e293b; border-radius: 15px; overflow: hidden; border: 1px solid #334155; display: flex; flex-direction: column; transition: transform 0.2s; }
+        .video-container { width: 100%; height: 180px; background: #000; position: relative; cursor: pointer; }
+        .video-container img { width: 100%; height: 100%; object-fit: cover; }
+        .video-container iframe { width: 100%; height: 100%; border: none; }
+        .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); }
         .content { padding: 12px; }
         .cat-tag { font-size: 10px; color: #3b82f6; font-weight: bold; text-transform: uppercase; }
         .title { font-size: 16px; margin: 5px 0; font-weight: 600; color: #f8fafc; }
         .comment { font-size: 13px; color: #94a3b8; }
-
         #loader { text-align: center; padding: 50px; }
     </style>
 </head>
@@ -134,7 +33,6 @@
     <div class="header">
         <h1 class="logo">Adnan's Playlist</h1>
     </div>
-
     <div class="filter-container">
         <a href="gallery.html" class="gallery-link-btn">🖼️ Gallery</a>
         <div id="filters" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;"></div>
@@ -184,7 +82,9 @@
         ).join('');
     }
 
+    // সঠিক আইডি এক্সট্রাকশন ফাংশন
     function extractVideoId(url) {
+        if (!url) return "";
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : "";
@@ -205,12 +105,11 @@
             card.className = 'card';
             
             const vidId = extractVideoId(v.video);
-            // http কে https করা হয়েছে যাতে Mixed Content ব্লক না হয়
             const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb.replace('http://', 'https://') : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
 
             card.innerHTML = `
                 <div class="video-container" id="vid-box-${index}" onclick="playInline('${vidId}', 'vid-box-${index}')">
-                    <img src="${finalThumb}" alt="${v.name}" loading="lazy">
+                    <img src="${finalThumb}" alt="${v.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x180?text=No+Thumbnail'">
                     <div class="play-overlay">
                         <svg width="60" height="60" viewBox="0 0 24 24" fill="white" style="filter: drop-shadow(0 0 10px rgba(0,0,0,0.5))">
                             <path d="M8 5v14l11-7z"/></svg>
@@ -232,9 +131,9 @@
             return;
         }
         const container = document.getElementById(containerId);
-        // HTTPS এবং Referrer Policy যোগ করা হয়েছে যাতে "Service Unavailable" না দেখায়
+        // সরাসরি youtube.com ডোমেইন এবং সঠিক সিকিউরিটি পলিসি
         container.innerHTML = `
-            <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1" 
+            <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                     referrerpolicy="strict-origin-when-cross-origin"
                     allowfullscreen></iframe>
