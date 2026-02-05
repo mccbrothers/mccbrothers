@@ -84,7 +84,6 @@
 
     function extractVideoId(url) {
         if (!url) return "";
-        // ইউটিউবের আইডি বের করার সবথেকে শক্তিশালী পদ্ধতি
         const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : "";
@@ -101,11 +100,11 @@
         const filtered = target === 'all' ? allVideos : allVideos.filter(i => i.cat === target);
 
         filtered.forEach((v, index) => {
+            const vidId = extractVideoId(v.video);
             const card = document.createElement('div');
             card.className = 'card';
             
-            const vidId = extractVideoId(v.video);
-            // থাম্বনেইল ঠিক করা হয়েছে
+            // ইউটিউবের অফিশিয়াল থাম্বনেইল লিঙ্ক ব্যবহার করা হয়েছে
             const finalThumb = (v.thumb && v.thumb.length > 10) 
                 ? v.thumb.replace('http://', 'https://') 
                 : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
@@ -134,7 +133,7 @@
             return;
         }
         const container = document.getElementById(containerId);
-        // মেইন ফিক্স: ডোমেইন youtube.com ব্যবহার করা হয়েছে যা Vercel এ কাজ করবে
+        // সঠিক এমবেড লিঙ্ক: youtube.com/embed/VID_ID
         container.innerHTML = `
             <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
