@@ -11,10 +11,9 @@
             background: #0f172a; 
             color: #fff;
             margin: 0; 
-            padding: 0; /* প্যাডিং ০ করে দিলাম যাতে স্টিকি এলিমেন্ট পুরোটা জুড়ে থাকে */
+            padding: 0;
         }
 
-        /* হেডার এবং ফিল্টারকে উপরে আটকে রাখার জন্য স্টিকি করা হয়েছে */
         .sticky-header {
             position: sticky;
             top: 0;
@@ -43,7 +42,6 @@
             max-width: 1100px;
         }
 
-        /* গ্যালারি বাটন স্টাইল */
         .gallery-link-btn {
             background: linear-gradient(45deg, #f59e0b, #ef4444);
             color: #fff;
@@ -187,13 +185,9 @@
     }
 
     function extractVideoId(url) {
-        let vid = "";
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
-        if (match && match[2].length === 11) {
-            vid = match[2];
-        }
-        return vid;
+        return (match && match[2].length === 11) ? match[2] : "";
     }
 
     function renderVideos(target) {
@@ -211,7 +205,8 @@
             card.className = 'card';
             
             const vidId = extractVideoId(v.video);
-            const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+            // http কে https করা হয়েছে যাতে Mixed Content ব্লক না হয়
+            const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb.replace('http://', 'https://') : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
 
             card.innerHTML = `
                 <div class="video-container" id="vid-box-${index}" onclick="playInline('${vidId}', 'vid-box-${index}')">
@@ -237,9 +232,11 @@
             return;
         }
         const container = document.getElementById(containerId);
+        // HTTPS এবং Referrer Policy যোগ করা হয়েছে যাতে "Service Unavailable" না দেখায়
         container.innerHTML = `
             <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1" 
-                    allow="autoplay; encrypted-media" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    referrerpolicy="strict-origin-when-cross-origin"
                     allowfullscreen></iframe>
         `;
         container.onclick = null; 
