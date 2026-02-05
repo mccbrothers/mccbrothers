@@ -82,9 +82,9 @@
         ).join('');
     }
 
-    // সঠিক আইডি এক্সট্রাকশন ফাংশন
     function extractVideoId(url) {
         if (!url) return "";
+        // সব ধরণের ইউটিউব লিঙ্ক থেকে আইডি বের করার স্মার্ট পদ্ধতি
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : "";
@@ -105,11 +105,12 @@
             card.className = 'card';
             
             const vidId = extractVideoId(v.video);
+            // থাম্বনেইল লিঙ্কে https নিশ্চিত করা হয়েছে
             const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb.replace('http://', 'https://') : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
 
             card.innerHTML = `
                 <div class="video-container" id="vid-box-${index}" onclick="playInline('${vidId}', 'vid-box-${index}')">
-                    <img src="${finalThumb}" alt="${v.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x180?text=No+Thumbnail'">
+                    <img src="${finalThumb}" alt="${v.name}" loading="lazy">
                     <div class="play-overlay">
                         <svg width="60" height="60" viewBox="0 0 24 24" fill="white" style="filter: drop-shadow(0 0 10px rgba(0,0,0,0.5))">
                             <path d="M8 5v14l11-7z"/></svg>
@@ -131,7 +132,7 @@
             return;
         }
         const container = document.getElementById(containerId);
-        // সরাসরি youtube.com ডোমেইন এবং সঠিক সিকিউরিটি পলিসি
+        // মেইন ফিক্স: সরাসরি youtube.com ডোমেইন এবং সিকিউরিটি পলিসি যোগ করা হয়েছে
         container.innerHTML = `
             <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
