@@ -84,8 +84,8 @@
 
     function extractVideoId(url) {
         if (!url) return "";
-        // সব ধরণের ইউটিউব লিঙ্ক থেকে আইডি বের করার স্মার্ট পদ্ধতি
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        // ইউটিউবের আইডি বের করার সবথেকে শক্তিশালী পদ্ধতি
+        const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : "";
     }
@@ -105,8 +105,10 @@
             card.className = 'card';
             
             const vidId = extractVideoId(v.video);
-            // থাম্বনেইল লিঙ্কে https নিশ্চিত করা হয়েছে
-            const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb.replace('http://', 'https://') : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+            // থাম্বনেইল ঠিক করা হয়েছে
+            const finalThumb = (v.thumb && v.thumb.length > 10) 
+                ? v.thumb.replace('http://', 'https://') 
+                : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
 
             card.innerHTML = `
                 <div class="video-container" id="vid-box-${index}" onclick="playInline('${vidId}', 'vid-box-${index}')">
@@ -128,15 +130,14 @@
 
     function playInline(vidId, containerId) {
         if(!vidId) {
-            alert("ভিডিও আইডি পাওয়া যায়নি!");
+            alert("ভিডিও আইডি পাওয়া যায়নি! দয়া করে শিটে সঠিক ইউটিউব ইউআরএল দিন।");
             return;
         }
         const container = document.getElementById(containerId);
-        // মেইন ফিক্স: সরাসরি youtube.com ডোমেইন এবং সিকিউরিটি পলিসি যোগ করা হয়েছে
+        // মেইন ফিক্স: ডোমেইন youtube.com ব্যবহার করা হয়েছে যা Vercel এ কাজ করবে
         container.innerHTML = `
             <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" 
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    referrerpolicy="strict-origin-when-cross-origin"
                     allowfullscreen></iframe>
         `;
         container.onclick = null; 
