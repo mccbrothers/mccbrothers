@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - Elite Nexus</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #0d1117; color: white; margin: 0; padding-bottom: 70px;">
+
+    <div style="background: linear-gradient(to bottom, #161b22, #0d1117); padding: 30px 20px; text-align: center; border-bottom: 1px solid #30363d;">
+        <div style="width: 80px; height: 80px; background: #58a6ff; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px;">
+            👤
+        </div>
+        <h2 id="accName" style="margin: 5px 0;">Loading...</h2>
+        <p style="color: gray; margin: 0;">UID: <span id="accId">0000</span></p>
+        <div style="margin-top: 15px; display: inline-block; background: #238636; padding: 5px 15px; border-radius: 20px; font-weight: bold;">
+            Coins: <span id="accCoins">0</span> 🪙
+        </div>
+        <button onclick="logout()" style="display:block; margin: 20px auto 0; background:none; border:1px solid #da3633; color:#da3633; padding:5px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">Logout</button>
+    </div>
+
+    <div style="padding: 20px;">
+        <h3 style="margin-bottom: 15px; color: #58a6ff;">Purchase History</h3>
+        <div id="orderList">
+            <p id="loadingText" style="color: gray;">Loading history...</p>
+        </div>
+    </div>
+
+    <div style="position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d;">
+        <button onclick="location.href='inbox.html'" style="background:none; border:none; color:gray; cursor:pointer;">📧 Inbox</button>
+        <button onclick="location.href='home.html'" style="background:none; border:none; color:gray; cursor:pointer;">🏠 Home</button>
+        <button onclick="location.href='account.html'" style="background:none; border:none; color:#58a6ff; cursor:pointer;">👤 Account</button>
+    </div>
+
+    <script>
+        // সেশন থেকে ইউজার ডাটা চেক
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if(!user) location.href = 'index.html';
+
+        // প্রোফাইল তথ্য দেখানো
+        document.getElementById('accName').innerText = user.name;
+        document.getElementById('accId').innerText = user.gameId;
+        document.getElementById('accCoins').innerText = user.coins;
+
+        // ১. সার্ভার থেকে রিয়েল-টাইম ডাটা এবং অর্ডার হিস্ট্রি লোড করা
+        async function fetchAccountData() {
+            try {
+                // নিরাপত্তা: ব্রাউজারে কোনো API লিঙ্ক নেই। সরাসরি সার্ভার এন্ডপয়েন্ট কল।
+                const response = await fetch(`/api/get-packages?gameId=${user.gameId}`);
+                if (!response.ok) throw new Error();
+
+                const data = await response.json();
+                
+                // রিয়েল টাইম ব্যালেন্স আপডেট
+                document.getElementById('accCoins').innerText = data.coins;
+                
+                // অর্ডার হিস্ট্রি রেন্ডার করা (সার্ভার থেকে আসা joinedPackages বা আলাদা হিস্ট্রি লিস্ট)
+                renderOrders(data.joinedPackages || []);
+            } catch (err) {
+                document.getElementById('loadingText').innerText = "Failed to load history.";
+            }
+        }
+
+        function renderOrders(orders) {
+            const list = document.getElementById('orderList');
+            list.innerHTML = "";
+
+            if(orders.length === 0) {
+                list.innerHTML = "<p style='color:gray;'>No purchases yet.</p>";
+                return;
+            }
+
+            // নতুন অর্ডারগুলো আগে দেখানোর জন্য
+            orders.reverse().forEach(pkgName => {
+                list.innerHTML += `
+                    <div style="background:#161b22; padding:12px; border-radius:8px; margin-bottom:10px; border: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight:bold;">${pkgName}</div>
+                            <div style="font-size:11px; color:gray;">Tournament Entry</div>
+                        </div>
+                        <div style="color: #238636; font-size: 13px;">● Success</div>
+                    </div>
+                `;
+            });
+        }
+
+        function logout() {
+            if(confirm("আপনি কি লগআউট করতে চান?")) {
+                sessionStorage.clear();
+                location.href = 'index.html';
+            }
+        }
+
+        // শুরুতে ডাটা ফেচ করা
+        fetchAccountData();
+    </script>
+</body>
+</html>
