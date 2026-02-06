@@ -1,19 +1,16 @@
 export default async function handler(req, res) {
-    if (req.method !== 'GET') return res.status(405).send();
-
     const { gameId } = req.query;
-    const SHEET_URL = "https://sheetdb.io/api/v1/kn4x6d50pr5dm"; // URL এখন ব্যাকএন্ডে নিরাপদ
-
-    if (!gameId) {
-        return res.status(400).json({ error: "Game ID missing" });
-    }
+    const NOTIFY_CSV_URL = "https://docs.google.com/spreadsheets/d/1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238/export?format=csv&gid=1114291772"; // Notifications gid
 
     try {
-        const response = await fetch(`${SHEET_URL}/search?sheet=Notifications&Game_ID=${gameId}`);
-        const data = await response.json();
-        return res.status(200).json(data);
+        const response = await fetch(NOTIFY_CSV_URL);
+        const csvText = await response.text();
+        const allMessages = csvToJSON(csvText);
+        
+        const userMessages = allMessages.filter(m => m.Game_ID == gameId);
+        return res.status(200).json(userMessages);
     } catch (error) {
-        return res.status(500).json({ error: "Server Error" });
+        return res.status(500).json({ error: "মেসেজ লোড করা যাচ্ছে না" });
     }
 }
-  
+function csvToJSON(csv) { /* একই ফাংশন */ }
