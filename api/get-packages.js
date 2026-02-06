@@ -1,14 +1,16 @@
 export default async function handler(req, res) {
+    if (req.method !== 'GET') return res.status(405).send();
+
     const { gameId } = req.query;
-    // আপনার মূল শিট আইডি ব্যবহার করে ডাইরেক্ট লিঙ্ক
-    const BASE = "https://docs.google.com/spreadsheets/d/1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238/gviz/tq?tqx=out:csv";
+    // আপনার দেওয়া গুগল শিট লিঙ্ক (CSV Export Format)
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238/gviz/tq?tqx=out:csv";
 
     try {
-        // ১. Packages, Users এবং Orders শিট থেকে ডাটা আনা (নাম দিয়ে)
+        // ১. সরাসরি শিট থেকে ৩টি ট্যাবের ডাটা ফেচ করা (প্যাকেজ, ইউজার, অর্ডার)
         const [pkgRes, userRes, orderRes] = await Promise.all([
-            fetch(`${BASE}&sheet=Packages`),
-            fetch(`${BASE}&sheet=Users`),
-            fetch(`${BASE}&sheet=Orders`)
+            fetch(`${SHEET_URL}&sheet=Packages`),
+            fetch(`${SHEET_URL}&sheet=Users`),
+            fetch(`${SHEET_URL}&sheet=Orders`)
         ]);
 
         const packages = csvToJSON(await pkgRes.text());
@@ -24,29 +26,28 @@ export default async function handler(req, res) {
             joinedIds = orders.filter(o => o.Game_ID == gameId).map(o => o.Match_ID || o.Package);
         }
 
+        // আপনার আগের ফরমেটেই ডাটা ফেরত পাঠানো হচ্ছে
         return res.status(200).json({
             packages: packages,
             coins: latestCoins,
             joinedPackages: joinedIds
         });
-    } catch (e) {
-        return res.status(500).json({ error: "Data load failed" });
+
+    } catch (error) {
+        return res.status(500).json({ error: "Server Error" });
     }
 }
 
-// কমন ফাংশন: CSV কে ডাটাবেস ফরমেটে রূপান্তর
+// CSV কে JSON বানানোর প্রসেসর (এটি এপিআই ফোল্ডারে গোপন থাকবে)
 function csvToJSON(csv) {
     const lines = csv.split(/\r?\n/);
-    if (lines.length === 0) return [];
     const headers = lines[0].split(',').map(h => h.replace(/\"/g, "").trim());
     return lines.slice(1).map(line => {
         const data = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         let obj = {};
         headers.forEach((h, i) => {
-            let val = data[i] ? data[i].replace(/\"/g, "").trim() : "";
-            obj[h] = val;
+            obj[h] = data[i] ? data[i].replace(/\"/g, "").trim() : "";
         });
         return obj;
-    }).filter(o => o.Game_ID || o.Title || o.Match_ID);
+    });
             }
-    
