@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Elite Nexus</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #0d1117; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+    <div style="background: #161b22; padding: 30px; border-radius: 15px; width: 320px; text-align: center; border: 1px solid #30363d;">
+        <h2 style="color: #58a6ff;">CREATE ACCOUNT</h2>
+        <p style="font-size: 14px; color: gray;">Join the Elite Nexus Tournament</p>
+        
+        <input type="text" id="regName" placeholder="Full Name" style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box;">
+        
+        <input type="number" id="regId" placeholder="Game UID (e.g. 1818398816)" style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box;">
+        
+        <input type="password" id="regPin" placeholder="Set 4-6 Digit PIN" style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box;">
+        
+        <button id="regBtn" onclick="handleRegister()" style="width: 100%; padding: 12px; background: linear-gradient(to right, #238636, #2ea043); border: none; border-radius: 5px; color: white; cursor: pointer; font-weight: bold; margin-top: 10px;">CREATE ACCOUNT</button>
+        
+        <p id="reg-error" style="color: #ff7b72; font-size: 13px; margin-top: 10px;"></p>
+        
+        <p style="font-size: 12px; margin-top: 15px;">Already have an account? <a href="index.html" style="color: #58a6ff; text-decoration: none;">Login Here</a></p>
+    </div>
+
+    <script>
+        async function handleRegister() {
+            const name = document.getElementById('regName').value.trim();
+            const gameId = document.getElementById('regId').value.trim();
+            const pin = document.getElementById('regPin').value.trim();
+            const errorMsg = document.getElementById('reg-error');
+            const btn = document.getElementById('regBtn');
+
+            if(!name || !gameId || !pin) {
+                errorMsg.innerText = "সবগুলো ঘর পূরণ করুন!";
+                return;
+            }
+
+            // বাটন ডিসেবল করা যাতে বারবার ক্লিক না হয় (Double Request Prevention)
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, gameId, pin })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("একাউন্ট তৈরি সফল হয়েছে! এখন লগইন করুন।");
+                    window.location.href = 'index.html';
+                } else {
+                    errorMsg.innerText = data.message;
+                    btn.disabled = false;
+                    btn.innerText = "CREATE ACCOUNT";
+                }
+            } catch (err) {
+                errorMsg.innerText = "সার্ভার সমস্যা! আবার চেষ্টা করুন।";
+                btn.disabled = false;
+                btn.innerText = "CREATE ACCOUNT";
+            }
+        }
+    </script>
+</body>
+</html>

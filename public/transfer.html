@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Nexus - Transfer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .card { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid #30363d; max-width: 400px; margin: 40px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #58a6ff; text-align: center; margin-bottom: 25px; }
+        .balance-display { background: rgba(88, 166, 255, 0.1); border: 1px solid #30363d; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .balance-display span { font-size: 14px; color: #8b949e; }
+        .balance-display strong { display: block; font-size: 24px; color: #f0e68c; margin-top: 5px; }
+        input { width: 100%; padding: 14px; margin: 10px 0 20px 0; border-radius: 10px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 15px; background: linear-gradient(45deg, #238636, #2ea043); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 18px; box-shadow: 0 4px 15px rgba(35, 134, 54, 0.3); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .back { display: block; text-align: center; margin-top: 20px; color: #8b949e; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <script>
+        // সিকিউরিটি: লগইন না থাকলে বের করে দিবে
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user || !user.gameId) {
+            alert("সেশন শেষ! দয়া করে আবার লগইন করুন।");
+            window.location.href = '/index.html'; 
+        }
+    </script>
+
+    <div class="card">
+        <h2>Transfer Coins <i class="fas fa-paper-plane" style="font-size: 20px;"></i></h2>
+        
+        <div class="balance-display">
+            <span>আপনার বর্তমান ব্যালেন্স</span>
+            <strong id="myBalance">Loading...</strong>
+        </div>
+
+        <label style="color: #8b949e; font-size: 14px;">বন্ধুর Game ID</label>
+        <input type="text" id="receiverId" placeholder="ID এখানে লিখুন">
+
+        <label style="color: #8b949e; font-size: 14px;">কয়েনের পরিমাণ</label>
+        <input type="number" id="amount" placeholder="উদা: ৫০">
+
+        <button id="transferBtn" onclick="doTransfer()">কনফার্ম ট্রান্সফার</button>
+        <a href="/store.html" class="back">← ফিরে যান</a>
+    </div>
+
+    <script>
+        // ব্যালেন্স চেক করার ফাংশন
+        async function updateUI() {
+            try {
+                const res = await fetch(`/api/get-packages?gameId=${user.gameId}`);
+                const data = await res.json();
+                document.getElementById('myBalance').innerText = data.coins + " 🪙";
+            } catch (e) { document.getElementById('myBalance').innerText = "Erro!"; }
+        }
+
+        async function doTransfer() {
+            const rid = document.getElementById('receiverId').value.trim();
+            const amt = parseInt(document.getElementById('amount').value);
+            const btn = document.getElementById('transferBtn');
+
+            if (!rid || isNaN(amt) || amt < 10) {
+                return alert("কমপক্ষে ১০ কয়েন এবং সঠিক আইডি দিন।");
+            }
+
+            btn.disabled = true;
+            btn.innerText = "পাঠানো হচ্ছে...";
+
+            try {
+                const res = await fetch('/api/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        senderId: user.gameId, 
+                        receiverId: rid, 
+                        amount: amt 
+                    })
+                });
+
+                const data = await res.json();
+                alert(data.message);
+
+                if (res.ok) window.location.href = '/home.html';
+            } catch (err) {
+                alert("সার্ভার সমস্যা!");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "কনফার্ম ট্রান্সফার";
+            }
+        }
+
+        updateUI();
+    </script>
+</body>
+  </html>
+  

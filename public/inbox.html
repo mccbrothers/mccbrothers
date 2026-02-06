@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox - Elite Nexus</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #0d1117; color: white; margin: 0; padding-bottom: 70px;">
+
+    <div style="padding: 20px; border-bottom: 1px solid #30363d;">
+        <h3 style="margin: 0; color: #58a6ff;">📧 Inbox Messages</h3>
+    </div>
+
+    <div id="messageList" style="padding: 15px;">
+        <p id="loadingText" style="text-align: center; color: gray;">Loading messages...</p>
+    </div>
+
+    <div style="position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d;">
+        <button onclick="location.href='inbox.html'" style="background:none; border:none; color:#58a6ff; cursor:pointer; font-weight:bold;">📧 Inbox</button>
+        <button onclick="location.href='home.html'" style="background:none; border:none; color:gray; cursor:pointer;">🏠 Home</button>
+        <button onclick="location.href='account.html'" style="background:none; border:none; color:gray; cursor:pointer;">👤 Account</button>
+    </div>
+
+    <script>
+        // ইউজারের সেশন চেক করা
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user) {
+            location.href = 'index.html';
+        }
+
+        async function loadMessages() {
+            const list = document.getElementById('messageList');
+            
+            try {
+                // নিরাপত্তা আপডেট: সরাসরি URL ব্যবহার না করে আমাদের ব্যাকএন্ড API কল করা হচ্ছে
+                const response = await fetch(`/api/get-messages?gameId=${user.gameId}`);
+                
+                if (!response.ok) throw new Error("Failed to fetch");
+
+                const messages = await response.json();
+                list.innerHTML = ""; 
+
+                if (!messages || messages.length === 0) {
+                    list.innerHTML = "<p style='text-align: center; color:gray; margin-top: 20px;'>কোন মেসেজ পাওয়া যায়নি।</p>";
+                    return;
+                }
+
+                messages.reverse().forEach(msg => {
+                    list.innerHTML += `
+                        <div style="background:#161b22; padding:15px; border-radius:10px; margin-bottom:12px; border: 1px solid #30363d; border-left: 4px solid #58a6ff;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size:11px; color:#58a6ff; font-weight: bold;">SYSTEM</span>
+                                <span style="font-size:10px; color:gray;">${msg.Time || ''}</span>
+                            </div>
+                            <div style="font-size:14px; line-height: 1.5; color: #e6edf3;">${msg.Message}</div>
+                        </div>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loadingText').innerText = "মেসেজ লোড করা সম্ভব হয়নি।";
+            }
+        }
+
+        loadMessages();
+    </script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zfox Store - Elite Nexus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #0d1117;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* হেডার ডিজাইন */
+        .header {
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+            border-bottom: 1px solid #30363d;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #ff8c00, #ff0080);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+        }
+
+        /* মেইন কন্টেইনার */
+        .container {
+            width: 90%;
+            max-width: 500px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        /* প্রিমিয়াম ক্যাশ আউট বাটন ডিজাইন */
+        .cashout-card {
+            background: #161b22;
+            padding: 30px 20px;
+            border-radius: 20px;
+            border: 1px solid #30363d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+
+        .cashout-title {
+            color: #8b949e;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .btn-transfer {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 114, 255, 0.4);
+            width: 80%;
+        }
+
+        /* বাটনের গ্লোয়িং এনিমেশন */
+        .btn-transfer::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(45deg);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+
+        .btn-transfer:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 114, 255, 0.8);
+        }
+
+        .btn-transfer i {
+            margin-right: 12px;
+            font-size: 24px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* স্টোর আইটেম ডামি সেকশন */
+        .item-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .store-item {
+            background: #161b22;
+            border: 1px solid #30363d;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .store-item i { font-size: 30px; color: #f0e68c; margin-bottom: 10px; }
+
+        /* বটম নেভিগেশন */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: #161b22;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-top: 1px solid #30363d;
+        }
+        
+        .nav-link { color: #8b949e; text-decoration: none; font-size: 20px; }
+        .nav-link.active { color: #58a6ff; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Zfox স্টোর</h1>
+    </div>
+
+    <div class="container">
+        <div class="cashout-card">
+            <span class="cashout-title">কয়েন ট্রান্সফার করার জন্য নিচের বাটনে ক্লিক করুন</span>
+            <a href="transfer.html" class="btn-transfer">
+                <i class="fas fa-money-bill-transfer"></i>
+                ক্যাশ আউট
+            </a>
+        </div>
+
+        <h3 style="text-align: left; color: #58a6ff;">স্পেশাল অফার</h3>
+        <div class="item-grid">
+            <div class="store-item">
+                <i class="fas fa-coins"></i>
+                <p>১০০ কয়েন</p>
+                <span style="color: #2ea043;">৳ ৮০</span>
+            </div>
+            <div class="store-item">
+                <i class="fas fa-gem"></i>
+                <p>প্রিমিয়াম পাস</p>
+                <span style="color: #2ea043;">৳ ৫০০</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="home.html" class="nav-link"><i class="fas fa-home"></i></a>
+        <a href="store.html" class="nav-link active"><i class="fas fa-shopping-bag"></i></a>
+        <a href="profile.html" class="nav-link"><i class="fas fa-user"></i></a>
+    </div>
+
+    <script>
+        // লগইন চেক (আগের মতো)
+        const user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+  </html>
+  

@@ -1,1 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Elite Nexus</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #0d1117; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
 
+    <div style="background: #161b22; padding: 30px; border-radius: 15px; width: 320px; text-align: center; border: 1px solid #30363d; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <h2 style="color: #58a6ff; margin-bottom: 5px;">ELITE NEXUS</h2>
+        <p style="font-size: 14px; color: gray; margin-bottom: 25px;">লগইন করে টুর্নামেন্টে যোগ দিন</p>
+        
+        <p id="login-error" style="color: #ff7b72; font-size: 13px; margin-bottom: 10px;"></p>
+
+        <input type="number" id="loginId" placeholder="Game UID ( )" style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box; outline: none;">
+        
+        <input type="password" id="loginPin" placeholder="4-Digit PIN" style="width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box; outline: none;">
+        
+        <button id="loginBtn" onclick="handleLogin()" style="width: 100%; padding: 12px; margin-top: 15px; border-radius: 8px; border: none; background: linear-gradient(90deg, #00d2ff, #3a7bd5); color: white; font-weight: bold; cursor: pointer; transition: 0.3s;">
+            LOGIN
+        </button>
+
+        <p style="margin-top: 20px; font-size: 14px; color: gray;">
+            একাউন্ট নেই? <a href="register.html" style="color: #58a6ff; text-decoration: none; font-weight: bold;">রেজিস্ট্রেশন করুন</a>
+        </p>
+    </div>
+
+    <script>
+        // যদি ইউজার ইতিমধ্যে লগইন করা থাকে, তবে তাকে হোমে পাঠিয়ে দাও
+        if (sessionStorage.getItem('user')) {
+            window.location.href = 'home.html';
+        }
+
+        async function handleLogin() {
+            const gameId = document.getElementById('loginId').value.trim();
+            const pin = document.getElementById('loginPin').value.trim();
+            const errorMsg = document.getElementById('login-error');
+            const btn = document.getElementById('loginBtn');
+
+            if(!gameId || !pin) {
+                errorMsg.innerText = "গেম আইডি এবং পিন দিন!";
+                return;
+            }
+
+            // বাটন লোডিং স্টেট
+            btn.disabled = true;
+            btn.innerText = "Verifying...";
+            errorMsg.innerText = "";
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameId, pin })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // সেশন স্টোরেজে ইউজার ডাটা সেভ করা
+                    sessionStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = 'home.html';
+                } else {
+                    errorMsg.innerText = data.message || "লগইন ব্যর্থ হয়েছে!";
+                    btn.disabled = false;
+                    btn.innerText = "LOGIN";
+                }
+            } catch (err) {
+                errorMsg.innerText = "সার্ভার সমস্যা! ইন্টারনেট কানেকশন চেক করুন।";
+                btn.disabled = false;
+                btn.innerText = "LOGIN";
+            }
+        }
+    </script>
+</body>
+</html>
