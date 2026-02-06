@@ -1,26 +1,19 @@
 export default async function handler(req, res) {
-    if (req.method !== 'GET') return res.status(405).send();
-
     const { gameId } = req.query;
-    const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238/export?format=csv";
+    // আপনার মূল শিট আইডি ব্যবহার করে ডাইরেক্ট লিঙ্ক
+    const BASE = "https://docs.google.com/spreadsheets/d/1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238/gviz/tq?tqx=out:csv";
 
     try {
-        // ১. সরাসরি শিট থেকে সব ডাটা আনা (প্যাকেজ মেইন শিটে থাকে)
-        const response = await fetch(SHEET_CSV_URL);
-        const csvText = await response.text();
-        const allPackages = csvToJSON(csvText);
+        // ১. Packages, Users এবং Orders শিট থেকে ডাটা আনা (নাম দিয়ে)
+        const [pkgRes, userRes, orderRes] = await Promise.all([
+            fetch(`${BASE}&sheet=Packages`),
+            fetch(`${BASE}&sheet=Users`),
+            fetch(`${BASE}&sheet=Orders`)
+        ]);
 
-        // ২. ইউজারের কয়েন এবং অর্ডার চেক করার জন্য আলাদা আলাদা শিট ডাটা আনা
-        // আমরা একই ইউআরএল এর শেষে '&gid=ID' যোগ করে আলাদা ট্যাব পড়তে পারি
-        // Users শিট (gid=0 বা আপনার শিটের আইডি অনুযায়ী)
-        const usersRes = await fetch(`${SHEET_CSV_URL}&gid=0`); 
-        const usersCsv = await usersRes.text();
-        const users = csvToJSON(usersCsv);
-
-        // Orders শিট (gid=আপনার অর্ডার শিটের আইডি)
-        const ordersRes = await fetch(`${SHEET_CSV_URL}&gid=1740905391`); 
-        const ordersCsv = await ordersRes.text();
-        const orders = csvToJSON(ordersCsv);
+        const packages = csvToJSON(await pkgRes.text());
+        const users = csvToJSON(await userRes.text());
+        const orders = csvToJSON(await orderRes.text());
 
         let latestCoins = 0;
         let joinedIds = [];
@@ -32,23 +25,28 @@ export default async function handler(req, res) {
         }
 
         return res.status(200).json({
-            packages: allPackages,
+            packages: packages,
             coins: latestCoins,
             joinedPackages: joinedIds
         });
-
-    } catch (error) {
-        return res.status(500).json({ error: "Failed to load data" });
+    } catch (e) {
+        return res.status(500).json({ error: "Data load failed" });
     }
 }
 
+// কমন ফাংশন: CSV কে ডাটাবেস ফরমেটে রূপান্তর
 function csvToJSON(csv) {
-    const lines = csv.split("\n");
-    const headers = lines[0].split(",");
+    const lines = csv.split(/\r?\n/);
+    if (lines.length === 0) return [];
+    const headers = lines[0].split(',').map(h => h.replace(/\"/g, "").trim());
     return lines.slice(1).map(line => {
-        const data = line.split(",");
+        const data = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
         let obj = {};
-        headers.forEach((h, i) => obj[h.trim()] = data[i]?.trim());
+        headers.forEach((h, i) => {
+            let val = data[i] ? data[i].replace(/\"/g, "").trim() : "";
+            obj[h] = val;
+        });
         return obj;
-    }).filter(o => o.Title || o.Game_ID); 
-}
+    }).filter(o => o.Game_ID || o.Title || o.Match_ID);
+            }
+    
