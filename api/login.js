@@ -19,7 +19,7 @@ export default async function handler(req, res) {
             return res.status(401).json({ message: "ভুল পিন নম্বর!" });
         }
     } catch (error) {
-        return res.status(500).json({ message: "লগইন এই মুহূর্তে কাজ করছে না" });
+        return res.status(500).json({ message: "সার্ভারে সমস্যা হয়েছে!" });
     }
 }
-function csvToJSON(csv) { /* উপরে দেওয়া একই ফাংশনটি এখানে কপি করুন */ }
+function csvToJSON(csv) { /* উপরে দেওয়া ফাংশনটি এখানেও ব্যবহার করুন */ }
