@@ -115,7 +115,6 @@
 
         let allPackages = [];
         let timers = [];
-        let lastShownBanner = "";
 
         // ডাটা সিঙ্ক ফাংশন
         async function syncData() {
@@ -130,8 +129,11 @@
             } catch (err) { console.error("Sync Error:", err); }
         }
 
-        // --- ব্যানার ফাংশন (CENTRALIZED FIX) ---
+        // --- স্মার্ট ব্যানার ফাংশন (Session Controlled) ---
         async function fetchBannerFromSheet() {
+            // যদি ইউজার এই সেশনে একবার ব্যানার কেটে দেয়, তবে আর চেক করবে না
+            if (sessionStorage.getItem('bannerDismissed') === 'true') return;
+
             try {
                 const sheetUrl = "https://docs.google.com/spreadsheets/d/1jrwIZvzegH-bHAZx1SVCCzgn10HHLpFy2sEltx9PrUM/gviz/tq?tqx=out:csv&sheet=sheet1";
                 const response = await fetch(sheetUrl);
@@ -142,25 +144,21 @@
                 const imageUrl = rows[1][1];
                 const linkUrl = rows[1][2];
 
-                if (status === "active" && imageUrl !== lastShownBanner) {
-                    lastShownBanner = imageUrl;
+                if (status === "active") {
                     showBannerPopup(imageUrl, linkUrl);
-                } else if (status !== "active") {
-                    const existing = document.getElementById('sheetBannerPopup');
-                    if (existing) existing.remove();
                 }
             } catch (error) { console.log("Banner fetch error"); }
         }
 
         function showBannerPopup(img, link) {
-            if(document.getElementById('sheetBannerPopup')) document.getElementById('sheetBannerPopup').remove();
+            // যদি অলরেডি পপআপ স্ক্রিনে থাকে, তবে আবার বানাবে না
+            if(document.getElementById('sheetBannerPopup')) return;
             
-            // মেইন পপআপ HTML - একদম মাঝখানে আসার জন্য CSS আপডেট
             const bannerHtml = `
             <div id="sheetBannerPopup" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center;">
                 <div style="position:relative; width:85%; max-width:320px; border-radius:15px; border:2px solid #ffcc00; box-shadow:0 0 25px rgba(255, 204, 0, 0.4); overflow:hidden; background:#161b22; animation: pop 0.4s ease-out;">
                     
-                    <button onclick="document.getElementById('sheetBannerPopup').remove()" 
+                    <button onclick="dismissBanner()" 
                         style="position:absolute; top:8px; right:8px; background:rgba(248, 81, 73, 0.9); color:white; border:none; width:26px; height:26px; border-radius:50%; font-weight:bold; cursor:pointer; z-index:10001; font-size:12px; display:flex; align-items:center; justify-content:center;">✕</button>
                     
                     <img src="${img}" onclick="if('${link}') window.location.href='${link}'" style="width:100%; display:block; cursor:pointer;">
@@ -169,7 +167,14 @@
             document.body.insertAdjacentHTML('beforeend', bannerHtml);
         }
 
-        // বাকি সব ফাংশন আগের মতই সুরক্ষিত
+        function dismissBanner() {
+            const popup = document.getElementById('sheetBannerPopup');
+            if (popup) popup.remove();
+            // সেশনে সেভ করে রাখা যাতে এইবার আর না দেখায়
+            sessionStorage.setItem('bannerDismissed', 'true');
+        }
+
+        // বাকি টুর্নামেন্ট লজিক
         function renderMatches(joinedIds) {
             const list = document.getElementById('tournamentList');
             list.innerHTML = "";
@@ -230,7 +235,6 @@
         function openM(id) {
             const pkg = allPackages.find(p => (p.Match_ID === id || p.Title === id));
             if(!pkg) return;
-            if(pkg.Type === "Game") { window.location.href = 'game.html'; return; }
             document.getElementById('mTitle').innerText = pkg.Title;
             document.getElementById('mMap').innerText = pkg.Map || "TBA";
             document.getElementById('mTime').innerText = pkg.Time || "TBA";
@@ -258,7 +262,7 @@
 
         function closeM() { document.getElementById('detailsModal').style.display = 'none'; }
 
-        // ১০ সেকেন্ড পর পর সব সিঙ্ক হবে
+        // ১০ সেকেন্ড পর পর চেক
         setInterval(() => {
             syncData();
             fetchBannerFromSheet();
@@ -268,5 +272,4 @@
         setTimeout(fetchBannerFromSheet, 3000);
     </script>
 </body>
-            </html>
-                
+</html>
