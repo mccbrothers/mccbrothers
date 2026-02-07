@@ -3,141 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minesweeper Pro - Zfox_fc</title>
+    <title>Minesweeper Pro</title>
     <style>
         body { background-color: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(5, 60px); gap: 10px; background: #161b22; padding: 15px; border-radius: 15px; border: 1px solid #30363d; margin: 20px auto; width: max-content; }
-        .cell { width: 60px; height: 60px; background: #21262d; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 8px; border: 1px solid #30363d; transition: 0.2s; }
-        .cell:hover { background: #30363d; }
-        .revealed { background: #0d1117 !important; cursor: default; border: 1px solid #58a6ff; }
-        .bomb { background: #f85149 !important; }
-        #setup input { padding: 12px; border-radius: 8px; border: 1px solid #30363d; background: #161b22; color: white; width: 150px; margin-bottom: 10px; }
-        .btn { padding: 12px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-start { background: linear-gradient(45deg, #238636, #2ea043); color: white; }
-        .btn-cashout { background: linear-gradient(45deg, #58a6ff, #00d2fc); color: white; margin-top: 20px; }
+        .game-card { max-width: 380px; margin: auto; background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .setup-area { margin-bottom: 20px; }
+        input { width: 80%; padding: 12px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; margin-bottom: 10px; font-size: 16px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
+        .cell { aspect-ratio: 1/1; background: #21262d; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; border-radius: 8px; border: 1px solid #30363d; transition: 0.2s; }
+        .revealed { background: #0d1117 !important; border-color: #58a6ff; color: #ffcc00; }
+        .bomb { background: #f85149 !important; border-color: #f85149; }
+        .btn { padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 10px; }
+        .btn-paid { background: #238636; color: white; }
+        .btn-free { background: transparent; border: 1px solid #58a6ff; color: #58a6ff; }
+        .btn-cashout { background: #ffcc00; color: #000; display: none; }
+        #statusMsg { margin-top: 15px; font-size: 14px; font-weight: bold; min-height: 20px; }
+        .stats { display: flex; justify-content: space-between; font-size: 13px; background: #0d1117; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <script>
-        // রিডাইরেক্ট চেক: যদি ইউজার লগইন না থাকে
-        const user = JSON.parse(sessionStorage.getItem('user'));
-        if (!user || !user.gameId) {
-            window.location.href = 'index.html';
-        }
-    </script>
-
-    <h2 style="color: #58a6ff;">💣 Minesweeper Pro</h2>
+<div class="game-card">
+    <h2 style="color: #58a6ff;">💣 Minesweeper</h2>
     
-    <div id="setup">
-        <p>আপনার বেট এমাউন্ট লিখুন (মিনিমাম ৫ 🪙)</p>
-        <input type="number" id="betInput" min="5" placeholder="এমাউন্ট দিন"> <br>
-        <button class="btn btn-start" onclick="startPay()">গেম শুরু করুন</button>
+    <div id="statsArea" class="stats" style="display: none;">
+        <span>লাভ: <span id="winDisplay" style="color:#ffcc00">0.00</span></span>
+        <span>বেট: <span id="betDisplay">0</span></span>
     </div>
 
-    <div id="gameArea" style="display:none;">
-        <div style="background: #161b22; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #58a6ff;">
-            <h3 style="margin: 0;">চলতি লাভ: <span id="currentWin" style="color: #ffcc00;">0</span> 🪙</h3>
-        </div>
-        <div class="grid" id="grid"></div>
-        <button id="cashoutBtn" class="btn btn-cashout" onclick="cashOut()">কয়েন আউট (Cash Out)</button>
+    <div id="setupArea" class="setup-area">
+        <input type="number" id="betInput" placeholder="টাকার পরিমাণ (পেইড গেম)">
+        <button class="btn btn-paid" onclick="startGame(false)">PAID GAME (Real Coins)</button>
+        <button class="btn btn-free" onclick="startGame(true)">FREE GAME (IQ Coins)</button>
     </div>
 
-    <script>
-        let bombPos, bet, earned = 0, revealedCount = 0;
-        let isGameOver = false;
+    <div id="gameGrid" class="grid" style="display: none;"></div>
 
-        async function startPay() {
-            const betInput = document.getElementById('betInput');
-            bet = parseInt(betInput.value);
+    <button id="cashoutBtn" class="btn btn-cashout" onclick="cashOut()">কয়েন তুলে নিন (Cash Out)</button>
 
-            if (isNaN(bet) || bet < 5) {
-                alert("অনুগ্রহ করে সঠিক এমাউন্ট দিন (সর্বনিম্ন ৫)");
-                return;
-            }
+    <div id="statusMsg"></div>
+</div>
 
-            try {
-                const res = await fetch('/api/game', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        gameId: user.gameId, 
-                        betAmount: bet, 
-                        userName: user.name 
-                    })
-                });
-                
-                const data = await res.json();
-                
-                if(data.success) {
-                    bombPos = data.bombLocation;
-                    document.getElementById('setup').style.display = 'none';
-                    document.getElementById('gameArea').style.display = 'block';
-                    createGrid();
-                } else { 
-                    alert(data.message || "আপনার পর্যাপ্ত কয়েন নেই!"); 
-                }
-            } catch (err) {
-                alert("সার্ভার ত্রুটি! আবার চেষ্টা করুন।");
-            }
+<script>
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    let isGameOver = false;
+
+    // ১. লগইন চেক (নিরাপত্তা)
+    if (!user || !user.gameId) {
+        window.location.href = 'index.html';
+    }
+
+    // ২. গেম শুরু (এপিআই কল)
+    async function startGame(isFree) {
+        const bet = isFree ? 0 : document.getElementById('betInput').value;
+        if (!isFree && bet < 5) {
+            showStatus("সর্বনিম্ন ৫ টাকা বেট ধরুন!", "#f85149");
+            return;
         }
 
-        function createGrid() {
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
-            for(let i=0; i<25; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.onclick = () => reveal(i, cell);
-                grid.appendChild(cell);
-            }
+        showStatus("সার্ভার চেক করা হচ্ছে...", "#58a6ff");
+
+        const res = await fetch('/api/game', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'start',
+                gameId: user.gameId,
+                betAmount: bet,
+                userName: user.name,
+                isFree: isFree
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('setupArea').style.display = 'none';
+            document.getElementById('gameGrid').style.display = 'grid';
+            document.getElementById('statsArea').style.display = 'flex';
+            document.getElementById('betDisplay').innerText = bet;
+            showStatus(isFree ? "ফ্রি গেম শুরু হয়েছে" : "পেইড গেম শুরু হয়েছে", "#238636");
+            createGrid();
+        } else {
+            showStatus(data.message, "#f85149");
         }
+    }
 
-        function reveal(i, el) {
-            if(isGameOver || el.classList.contains('revealed')) return;
-
-            if(i === bombPos) {
-                isGameOver = true;
-                el.innerHTML = '💣';
-                el.classList.add('revealed', 'bomb');
-                alert('বোমা ফেটেছে! আপনি হেরেছেন।');
-                finishGame('Boomed', 0);
-            } else {
-                el.classList.add('revealed');
-                el.innerHTML = '🪙';
-                revealedCount++;
-                // প্রফিট ক্যালকুলেশন (বেট এর ৯০% কে ২৪ দিয়ে ভাগ করে প্রতিটি ক্লিকের জন্য)
-                earned = (bet * 0.90 / 24) * revealedCount;
-                document.getElementById('currentWin').innerText = earned.toFixed(2);
-            }
+    // ৩. গ্রিড তৈরি
+    function createGrid() {
+        const grid = document.getElementById('gameGrid');
+        grid.innerHTML = '';
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.onclick = () => handleMove(i, cell);
+            grid.appendChild(cell);
         }
+    }
 
-        async function cashOut() {
-            if(isGameOver) return;
+    // ৪. চাল দেওয়া (সার্ভার সাইড ভেরিফিকেশন)
+    async function handleMove(index, element) {
+        if (isGameOver || element.classList.contains('revealed')) return;
+
+        const res = await fetch('/api/game', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'move',
+                gameId: user.gameId,
+                cellIndex: index
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.status === 'boom') {
             isGameOver = true;
-            const finalWin = parseFloat(earned) + parseInt(bet);
-            finishGame('Cashed Out', finalWin);
-        }
-
-        async function finishGame(status, finalAmount) {
-            try {
-                await fetch('/api/game-finish', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        gameId: user.gameId, 
-                        amount: finalAmount, 
-                        status: status,
-                        bet: bet,
-                        userName: user.name
-                    })
-                });
-                window.location.href = 'home.html';
-            } catch (e) {
-                console.error("Error saving game:", e);
-                window.location.href = 'home.html';
+            element.classList.add('bomb');
+            element.innerHTML = '💣';
+            showStatus("BOOM! আপনি ব্লাস্ট করেছেন।", "#f85149");
+            setTimeout(() => window.location.href = 'home.html', 2000);
+        } else {
+            element.classList.add('revealed');
+            element.innerHTML = '🪙';
+            document.getElementById('winDisplay').innerText = data.currentWin;
+            document.getElementById('cashoutBtn').style.display = 'block';
+            
+            if (data.status === 'winAll') {
+                showStatus("অবিশ্বাস্য! সব ঘর জিতেছেন!", "#ffcc00");
+                cashOut();
             }
         }
-    </script>
+    }
+
+    // ৫. ক্যাশ আউট (টাকা সেভ করা)
+    async function cashOut() {
+        if (isGameOver) return;
+        isGameOver = true;
+        showStatus("কয়েন একাউন্টে পাঠানো হচ্ছে...", "#58a6ff");
+
+        const res = await fetch('/api/game', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'finish', gameId: user.gameId })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            showStatus(`সফল! ${data.win} কয়েন যোগ হয়েছে।`, "#238636");
+            setTimeout(() => window.location.href = 'home.html', 1500);
+        }
+    }
+
+    // স্ট্যাটাস মেসেজ দেখানোর ফাংশন
+    function showStatus(msg, color) {
+        const el = document.getElementById('statusMsg');
+        el.innerText = msg;
+        el.style.color = color;
+    }
+</script>
+
 </body>
 </html>
