@@ -58,12 +58,15 @@
                 <div style="font-size: 8px; color: #ffcc00; font-weight: bold;">STORE</div>
             </div>
         </div>
-        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800;">Zfox_Fc 🏆26</h3>
+        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">Zfox_Fc 🏆26</h3>
+        
         <div style="text-align: right;">
-            <div style="background: #161b22; padding: 5px 12px; border-radius: 20px; border: 1px solid #58a6ff; display: inline-flex; align-items: center; gap: 6px;">
-                 <span>🪙 <span id="userCoins">0</span></span>
+            <div style="background: #161b22; padding: 5px 10px; border-radius: 20px; border: 1px solid #58a6ff; display: inline-flex; align-items: center; gap: 5px;">
+                 <span style="font-size: 12px;">🪙 <span id="userCoins">0</span></span>
+                 <span style="color: #30363d;">|</span>
+                 <span style="font-size: 12px; color: #ffcc00;">🧠 <span id="userIQ">0</span></span>
                 <a href="add-money.html" class="add-coin" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 3V13M3 8H13" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </a>
@@ -99,6 +102,10 @@
     </div>
     
     <script>
+        // সেশন স্টোরেজ থেকে সরাসরি ডাটা শো করা (এপিআই ছাড়া যেভাবে আগে কয়েন শো হতো)
+        document.getElementById('userCoins').innerText = user.coins || 0;
+        document.getElementById('userIQ').innerText = user.iq_balance || 0;
+
         let allPackages = [];
         let timers = [];
 
@@ -109,7 +116,9 @@
                 const data = await res.json();
                 
                 allPackages = data.packages;
+                // এপিআই কল সফল হলে ডাটা আপডেট হবে
                 document.getElementById('userCoins').innerText = data.coins;
+                document.getElementById('userIQ').innerText = data.iq_balance || 0;
                 
                 renderMatches(data.joinedPackages || []);
             } catch (err) {
@@ -153,7 +162,6 @@
 
                 const matchImg = pkg.img || "https://placehold.co/600x300/161b22/58a6ff?text=No+Image";
 
-                // 🔥 নতুন চেক: টাইপ যদি 'Game' হয় তবে সরাসরি game.html লিঙ্কে যাবে
                 const isGame = pkg.Type === "Game";
                 const actionButton = isGame 
                     ? `<button onclick="window.location.href='game.html'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`
@@ -189,7 +197,6 @@
             const pkg = allPackages.find(p => (p.Match_ID === id || p.Title === id));
             if(!pkg) return;
 
-            // যদি এটি ভুল করে গেম হয় তবে মডাল না খুলে সরাসরি রিডাইরেক্ট করবে
             if(pkg.Type === "Game") {
                 window.location.href = 'game.html';
                 return;
@@ -250,4 +257,5 @@
         syncData();
     </script>
 </body>
-</html>
+    </html>
+    
