@@ -3,143 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest Minesweeper - Play Now</title>
+    <title>Minesweeper Pro - Guest Mode</title>
     <style>
-        body { background: #0d1117; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .container { max-width: 400px; margin: auto; background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; }
-        
-        .header-info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; }
-        .coin-display { color: #f1e05a; font-weight: bold; }
-
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
-        .cell { aspect-ratio: 1; background: #30363d; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; }
-        .cell:hover { background: #484f58; }
-        .cell.revealed { background: #21262d; cursor: default; }
-        .cell.bomb { background: #f85149; }
-        .cell.diamond { background: #238636; }
-
-        .controls { margin-top: 20px; }
-        .btn { padding: 12px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; }
-        .cashout-btn { background: #f1e05a; color: black; display: none; }
-        .home-btn { background: transparent; border: 1px solid #58a6ff; color: #58a6ff; }
-        
-        #msg { margin-top: 15px; font-weight: bold; color: #ff7b72; }
+        /* game.html থেকে হুবহু কপি করা CSS */
+        body { background: #0d1117; color: white; font-family: sans-serif; text-align: center; padding: 20px; margin: 0; }
+        .container { max-width: 400px; margin: auto; background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .pkg-btn { padding: 10px; margin: 5px; cursor: pointer; border: 1px solid #58a6ff; background: transparent; color: #58a6ff; border-radius: 5px; width: 30%; font-weight: bold; }
+        .active-pkg { background: #58a6ff !important; color: white !important; }
+        .pay-btn { padding: 10px; margin: 5px; cursor: pointer; border: 1px solid #f1e05a; background: transparent; color: #f1e05a; border-radius: 5px; width: 45%; font-weight: bold; }
+        .active-pay { background: #f1e05a !important; color: black !important; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 20px 0; display: none; }
+        .cell { aspect-ratio: 1; background: #30363d; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; }
+        .cell:active { transform: scale(0.9); }
+        .revealed { background: #21262d !important; cursor: default; border: 1px solid #238636; }
+        .bomb { background: #f85149 !important; border: 1px solid #ff7b72; }
+        .btn { padding: 12px; width: 100%; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        #coBtn { background: #f1e05a; color: black; display: none; box-shadow: 0 0 10px rgba(241, 224, 90, 0.4); }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header-info">
-            <span id="gName">Guest...</span>
-            <span class="coin-display">🪙 <span id="gCoins">0</span></span>
-        </div>
+        <h2 style="color: #58a6ff; margin-bottom: 5px;">Minesweeper (Guest)</h2>
+        <p id="guestStat" style="font-size: 13px; color: gray; margin-bottom: 20px;">Loading stats...</p>
 
-        <h3 id="matchTitle" style="color: #58a6ff;">Loading Match...</h3>
-        <p style="font-size: 12px; color: #8b949e;">Win Prize: 🪙 <span id="currentWin">0</span></p>
-
-        <div class="grid" id="grid">
+        <div id="setup">
+            <p style="font-size: 14px; color: #8b949e;">Select Package:</p>
+            <div id="pkgs">
+                <button class="pkg-btn" onclick="selectPkg(5, this)">5 🪙</button>
+                <button class="pkg-btn" onclick="selectPkg(10, this)">10 🪙</button>
+                <button class="pkg-btn" onclick="selectPkg(50, this)">50 🪙</button>
+                <button class="pkg-btn" onclick="selectPkg(100, this)">100 🪙</button>
             </div>
-
-        <div id="msg"></div>
-
-        <div class="controls">
-            <button id="coBtn" class="btn cashout-btn" onclick="cashOut()">CASHOUT (🪙 0)</button>
-            <button class="btn home-btn" onclick="location.href='g.html'">EXIT GAME</button>
+            <div style="margin-top: 15px;">
+                <button class="pay-btn active-pay">GUEST COINS</button>
+            </div>
+            <button class="btn" style="background: linear-gradient(90deg, #238636, #2ea043); color: white; margin-top: 25px;" onclick="startGame()">START GAME</button>
         </div>
+
+        <div id="gameArea" style="display: none;">
+            <div style="background: #0d1117; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #30363d;">
+                <span style="color: #f1e05a; font-weight: bold;">Current Win: 🪙 <span id="winTxt">0</span></span>
+            </div>
+            <div class="grid" id="grid"></div>
+            <button id="coBtn" class="btn" onclick="cashOut()">CASHOUT</button>
+            <p id="msg" style="font-size: 14px; margin-top: 15px; font-weight: bold;"></p>
+        </div>
+        
+        <button class="btn" style="background: transparent; border: 1px solid #30363d; color: #8b949e; margin-top: 20px;" onclick="location.href='g.html'">EXIT TO HOME</button>
     </div>
 
     <script>
-        // ১. ডাটা লোড করা
+        // আপনার game.js এর হুবহু প্রফিট কনফিগ
+        const packages = {
+            '5': { fee: 5, profit: 0.5 },
+            '10': { fee: 10, profit: 1 },
+            '50': { fee: 50, profit: 5 },
+            '100': { fee: 100, profit: 10 }
+        };
+
         let guest = JSON.parse(localStorage.getItem('guest_user'));
-        let match = JSON.parse(sessionStorage.getItem('currentMatch'));
-
-        if (!match) {
-            alert("কোনো ম্যাচ সিলেক্ট করা হয়নি!");
-            location.href = 'g.html';
-        }
-
-        // গেম ভ্যারিয়েবল
-        let fee = parseInt(match.Fee);
-        let prizePerBox = Math.floor(parseInt(match.Prize) / 5); // প্রতি বক্সে লাভ
-        let totalWin = 0;
+        let selectedFee = 0;
+        let isEnded = false;
         let revealedCount = 0;
-        let isGameOver = false;
-        let bombIndex = Math.floor(Math.random() * 16); // র্যান্ডম বম্ব পজিশন
+        let bombIndex = -1;
+        let currentWin = 0;
 
-        // UI আপডেট
-        document.getElementById('gName').innerText = guest.name;
-        document.getElementById('gCoins').innerText = guest.coins;
-        document.getElementById('matchTitle').innerText = match.Title;
+        // স্ট্যাটাস আপডেট
+        function updateStats() {
+            if(!guest) { location.href = 'g.html'; return; }
+            document.getElementById('guestStat').innerText = `Guest: ${guest.name} | Balance: 🪙${guest.coins}`;
+        }
+        updateStats();
 
-        // ২. গেম ফি কাটা
-        if (guest.coins < fee) {
-            alert("পর্যাপ্ত কয়েন নেই!");
-            location.href = 'g.html';
-        } else {
-            guest.coins -= fee;
-            guest.played += 1;
-            saveData();
+        function selectPkg(fee, btn) {
+            selectedFee = fee;
+            document.querySelectorAll('.pkg-btn').forEach(b => b.classList.remove('active-pkg'));
+            btn.classList.add('active-pkg');
         }
 
-        // ৩. গ্রিড তৈরি
-        const gridEl = document.getElementById('grid');
-        for (let i = 0; i < 16; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.onclick = () => reveal(i, cell);
-            gridEl.appendChild(cell);
+        function startGame() {
+            if (selectedFee === 0) return alert("প্যাকেজ সিলেক্ট করুন!");
+            if (guest.coins < selectedFee) return alert("পর্যাপ্ত কয়েন নেই!");
+
+            // কয়েন কাটা
+            guest.coins -= selectedFee;
+            guest.played = (guest.played || 0) + 1;
+            save();
+
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('grid').style.display = 'grid';
+            
+            initGrid();
         }
 
-        // ৪. বক্স খোলার লজিক
-        function reveal(idx, el) {
-            if (isGameOver || el.classList.contains('revealed')) return;
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            bombIndex = Math.floor(Math.random() * 16);
+            isEnded = false;
+            revealedCount = 0;
+            currentWin = 0;
+            document.getElementById('winTxt').innerText = '0';
+            document.getElementById('msg').innerText = '';
 
-            if (idx === bombIndex) {
-                // হারলে
-                isGameOver = true;
-                el.classList.add('bomb');
-                el.innerHTML = '💣';
-                document.getElementById('msg').innerText = "BOOM! আপনি হেরেছেন। 😭";
-                setTimeout(() => location.href = 'g.html', 3000);
-            } else {
-                // জিতলে
-                el.classList.add('revealed', 'diamond');
-                el.innerHTML = '💎';
-                revealedCount++;
-                totalWin = fee + (revealedCount * prizePerBox);
-                
-                document.getElementById('currentWin').innerText = totalWin;
-                document.getElementById('coBtn').style.display = 'block';
-                document.getElementById('coBtn').innerText = `CASHOUT (🪙 ${totalWin})`;
-
-                if (revealedCount === 15) cashOut(); // সব খোলা হলে অটো ক্যাশআউট
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.onclick = () => move(i, cell);
+                grid.appendChild(cell);
             }
         }
 
-        // ৫. ক্যাশআউট লজিক
-        function cashOut() {
-            if (isGameOver) return;
-            isGameOver = true;
+        function move(idx, el) {
+            if (isEnded || el.classList.contains('revealed')) return;
 
-            guest.coins += totalWin;
-            guest.won += 1;
-            
-            // ইনবক্স মেসেজ অ্যাড করা
-            const msg = `অভিনন্দন! আপনি ${match.Title} ম্যাচে 🪙${totalWin} জিতেছেন।`;
-            guest.inbox = guest.inbox || [];
-            guest.inbox.push({ text: msg, time: new Date().toLocaleTimeString() });
-
-            saveData();
-            
-            document.getElementById('msg').style.color = "#3fb950";
-            document.getElementById('msg').innerText = `SUCCESS! 🪙${totalWin} যোগ করা হয়েছে।`;
-            
-            setTimeout(() => location.href = 'g.html', 2500);
+            if (idx === bombIndex) {
+                isEnded = true;
+                el.classList.add('bomb');
+                el.innerHTML = '💣';
+                document.getElementById('msg').innerText = "BOOM! আপনি হেরে গেছেন। 😭";
+                document.getElementById('msg').style.color = "#f85149";
+                setTimeout(() => location.reload(), 2500);
+            } else {
+                el.classList.add('revealed');
+                el.innerHTML = '💎';
+                revealedCount++;
+                
+                // আপনার game.js এর হুবহু লজিক: মূল ফি + (প্রতি বক্সের লাভ * বক্স সংখ্যা)
+                const config = packages[selectedFee.toString()];
+                let totalProfit = config.profit * revealedCount;
+                currentWin = Math.floor(selectedFee + totalProfit);
+                
+                document.getElementById('winTxt').innerText = currentWin;
+                document.getElementById('coBtn').style.display = 'block';
+                document.getElementById('coBtn').innerText = `CASHOUT (🪙 ${currentWin})`;
+                
+                if (revealedCount === 15) cashOut();
+            }
         }
 
-        function saveData() {
+        function cashOut() {
+            if (isEnded || currentWin === 0) return;
+            isEnded = true;
+
+            guest.coins += currentWin;
+            guest.won = (guest.won || 0) + 1;
+
+            // ইনবক্স মেসেজ জেনারেশন
+            const log = `ম্যাচ জয়! আপনি ${selectedFee} ফি দিয়ে খেলে 🪙${currentWin} জিতেছেন।`;
+            guest.inbox = guest.inbox || [];
+            guest.inbox.unshift({ text: log, time: new Date().toLocaleTimeString() });
+
+            save();
+            
+            document.getElementById('msg').innerText = "CONGRATS! কয়েন জমা হয়েছে। 🎉";
+            document.getElementById('msg').style.color = "#3fb950";
+            setTimeout(() => location.href = 'g.html', 2000);
+        }
+
+        function save() {
             localStorage.setItem('guest_user', JSON.stringify(guest));
-            document.getElementById('gCoins').innerText = guest.coins;
+            updateStats();
         }
     </script>
 </body>
