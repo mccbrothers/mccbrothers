@@ -39,6 +39,15 @@
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
         .nav-btn { background:none; border:none; color:gray; cursor:pointer; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-btn.active { color:#58a6ff; font-weight:bold; }
+        
+        /* 💎 প্রিমিয়াম কয়েন বক্স */
+        .premium-balance {
+            background: linear-gradient(145deg, #1e252e, #161b22);
+            padding: 6px 14px; border-radius: 30px;
+            border: 1px solid #58a6ff; display: inline-flex;
+            align-items: center; gap: 10px;
+            box-shadow: 0 4px 15px rgba(88, 166, 255, 0.2);
+        }
     </style>
 </head>
 <body>
@@ -61,20 +70,27 @@
         <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">Zfox_Fc 🏆26</h3>
         
         <div style="text-align: right;">
-            <div style="background: #161b22; padding: 5px 10px; border-radius: 20px; border: 1px solid #58a6ff; display: inline-flex; align-items: center; gap: 5px;">
-                 <span style="font-size: 12px;">🪙 <span id="userCoins">0</span></span>
-                 <span style="color: #30363d;">|</span>
-                 <span style="font-size: 12px; color: #ffcc00;">🧠 <span id="userIQ">0</span></span>
-                <a href="add-money.html" class="add-coin" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 3V13M3 8H13" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+            <div class="premium-balance">
+                 <span style="font-size: 14px; font-weight: bold; color: #58a6ff;">💎 <span id="userCoins">0</span></span>
+                <a href="add-money.html" style="background: #58a6ff; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
                 </a>
             </div>
         </div>
     </div>
 
     <div style="padding: 20px;">
+        <div style="background: linear-gradient(135deg, #1c1c1c, #2a2200); border: 2px solid #ffcc00; border-radius: 18px; padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(255, 204, 0, 0.15);">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="font-size: 28px; filter: drop-shadow(0 0 5px #ffcc00);">🪙</div>
+                <div>
+                    <div style="font-size: 10px; color: #ffcc00; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Available IQ Gold</div>
+                    <div style="font-size: 22px; font-weight: 900; color: #ffffff;"><span id="userIQ">0</span> <span style="font-size: 14px; color: #ffcc00;">IQ</span></div>
+                </div>
+            </div>
+            <button onclick="window.location.href='game.html'" style="background: #ffcc00; color: #000; border: none; padding: 10px 18px; border-radius: 10px; font-size: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 0 #b18c00;">PLAY FREE</button>
+        </div>
+
         <h2 style="font-size: 18px; border-left: 4px solid #58a6ff; padding-left: 10px; margin-bottom: 20px;">Live Tournaments</h2>
         <div id="tournamentList">
             <p style="text-align: center; color: gray;">Loading Matches...</p>
@@ -102,7 +118,7 @@
     </div>
     
     <script>
-        // সেশন স্টোরেজ থেকে সরাসরি ডাটা শো করা (এপিআই ছাড়া যেভাবে আগে কয়েন শো হতো)
+        // সেশন স্টোরেজ থেকে সরাসরি ডাটা শো করা
         document.getElementById('userCoins').innerText = user.coins || 0;
         document.getElementById('userIQ').innerText = user.iq_balance || 0;
 
@@ -116,7 +132,6 @@
                 const data = await res.json();
                 
                 allPackages = data.packages;
-                // এপিআই কল সফল হলে ডাটা আপডেট হবে
                 document.getElementById('userCoins').innerText = data.coins;
                 document.getElementById('userIQ').innerText = data.iq_balance || 0;
                 
@@ -183,7 +198,7 @@
                                 ${isGame ? `🎮 Interactive Minesweeper Game` : `👥 Players: <span style="color:white; font-weight:bold;">${joined}/${total}</span>`}
                             </p>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                <div style="font-weight:bold; color:#f0e68c; font-size: 15px;">Min: ${pkg.Fee} 🪙</div>
+                                <div style="font-weight:bold; color:#f0e68c; font-size: 15px;">Min: ${pkg.Fee} 💎</div>
                                 ${actionButton}
                             </div>
                         </div>
@@ -257,5 +272,4 @@
         syncData();
     </script>
 </body>
-    </html>
-    
+</html>
