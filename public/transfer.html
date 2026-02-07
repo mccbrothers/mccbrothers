@@ -21,7 +21,6 @@
 <body>
 
     <script>
-        // সিকিউরিটি: লগইন না থাকলে বের করে দিবে
         const user = JSON.parse(sessionStorage.getItem('user'));
         if (!user || !user.gameId) {
             alert("সেশন শেষ! দয়া করে আবার লগইন করুন।");
@@ -48,7 +47,6 @@
     </div>
 
     <script>
-        // ব্যালেন্স চেক করার ফাংশন
         async function updateUI() {
             try {
                 const res = await fetch(`/api/get-packages?gameId=${user.gameId}`);
@@ -61,6 +59,11 @@
             const rid = document.getElementById('receiverId').value.trim();
             const amt = parseInt(document.getElementById('amount').value);
             const btn = document.getElementById('transferBtn');
+
+            // নিজের আইডি চেক লজিক
+            if (rid === user.gameId) {
+                return alert("আপনি নিজের আইডিতে কয়েন পাঠাতে পারবেন না!");
+            }
 
             if (!rid || isNaN(amt) || amt < 1) {
                 return alert("কমপক্ষে ১০ কয়েন এবং সঠিক আইডি দিন।");
@@ -95,5 +98,4 @@
         updateUI();
     </script>
 </body>
-  </html>
-  
+</html>
