@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Tournaments - Guest</title>
+    <style>
+        /* home.html থেকে হুবহু কপি করা স্টাইল */
+        body { background-color: #0d1117; color: white; margin: 0; padding-bottom: 80px; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        .match-card { background: #161b22; padding: 18px; border-radius: 15px; border: 1px solid #30363d; margin-bottom: 15px; position: relative; }
+        .timer-badge { position: absolute; top: 10px; right: 10px; font-size: 11px; background: rgba(255, 204, 0, 0.1); color: #ffcc00; padding: 4px 8px; border-radius: 5px; border: 1px solid #ffcc00; font-weight: bold; }
+        #detailsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-card { background: #161b22; width: 85%; max-width: 400px; border-radius: 20px; border: 1px solid #58a6ff; padding: 20px; animation: pop 0.3s ease; }
+        .detail-item { background: #0d1117; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #ff4500; font-size: 14px; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
+        .nav-btn { background:none; border:none; color:gray; cursor:pointer; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div style="padding: 15px; text-align: center; border-bottom: 1px solid #30363d; position: sticky; top:0; background:#0d1117; z-index:90;">
+        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800;">Zfox_Fc 🏆 (Guest Mode)</h3>
+    </div>
+
+    <div style="padding: 20px;">
+        <h2 style="font-size: 18px; border-left: 4px solid #58a6ff; padding-left: 10px; margin-bottom: 20px;">Live Tournaments</h2>
+        <div id="tournamentList">
+            <p style="text-align: center; color: gray;">Loading Matches...</p>
+        </div>
+    </div>
+
+    <div id="detailsModal">
+        <div class="modal-card">
+            <h2 id="mTitle" style="color: #58a6ff; margin-top: 0; font-size: 20px;"></h2>
+            <div class="detail-item">🗺️ <b>Map:</b> <span id="mMap"></span></div>
+            <div class="detail-item">⏰ <b>Time (BD):</b> <span id="mTime"></span></div>
+            <div class="detail-item">🏆 <b>Prize:</b> <span id="mPrize"></span></div>
+            <div class="detail-item">📜 <b>Rules:</b> <span id="mRules"></span></div>
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button onclick="closeM()" style="flex:1; padding:12px; background:#30363d; color:white; border:none; border-radius:10px; cursor:pointer;">Back</button>
+                <button onclick="redirectToLogin()" style="flex:2; padding:12px; background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">Login to Join</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-btn"><span>🔑</span><span>Login</span></a>
+        <a href="register.html" class="nav-btn"><span>📝</span><span>Register</span></a>
+    </div>
+
+    <script>
+        let allPackages = [];
+        let timers = [];
+
+        async function fetchGuestMatches() {
+            try {
+                // api/g.js কে কল করা হচ্ছে
+                const res = await fetch('/api/g');
+                const data = await res.json();
+                allPackages = data.packages;
+                renderMatches();
+            } catch (err) {
+                document.getElementById('tournamentList').innerHTML = "<p style='color:red; text-align:center;'>Error loading matches!</p>";
+            }
+        }
+
+        function renderMatches() {
+            const list = document.getElementById('tournamentList');
+            list.innerHTML = "";
+            timers.forEach(t => clearInterval(t));
+
+            allPackages.forEach((pkg, index) => {
+                const total = parseInt(pkg.Total_Slots) || 48;
+                const joined = parseInt(pkg.Joined_Players) || 0;
+                const isFull = joined >= total;
+                const timerId = `timer-${index}`;
+
+                list.innerHTML += `
+                    <div class="match-card">
+                        <div id="${timerId}" class="timer-badge">Loading...</div>
+                        <h3 style="margin: 0; color: #58a6ff;">${pkg.Title}</h3>
+                        <p style="font-size: 12px; color: gray; margin: 8px 0;">
+                            👥 Players: <span style="color:white; font-weight:bold;">${joined}/${total}</span>
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <div style="font-weight:bold; color:#f0e68c; font-size: 15px;">Fee: ${pkg.Fee} 🪙</div>
+                            ${isFull ? 
+                                `<span style="color:#f85149; border:1px solid #f85149; padding:8px 15px; border-radius:8px; font-weight:bold;">FULL 🚫</span>` : 
+                                `<button onclick="openM('${pkg.Match_ID || pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">DETAILS</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                if (pkg.Time) startTimer(pkg.Time, timerId);
+            });
+        }
+
+        // বাংলাদেশ টাইমার লজিক (home.html থেকে নেওয়া)
+        function startTimer(targetTime, elementId) {
+            function update() {
+                const now = new Date();
+                const bdNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 6));
+                const diff = new Date(targetTime).getTime() - bdNow.getTime();
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                if (diff <= 0) { el.innerText = "Ongoing / Closed"; return; }
+                const d = Math.floor(diff / 86400000); 
+                const h = Math.floor((diff % 86400000) / 3600000); 
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                el.innerText = `Starts in: ${d}d ${h}h ${m}m ${s}s`;
+            }
+            update();
+            timers.push(setInterval(update, 1000));
+        }
+
+        function openM(id) {
+            const pkg = allPackages.find(p => (p.Match_ID === id || p.Title === id));
+            if(!pkg) return;
+            document.getElementById('mTitle').innerText = pkg.Title;
+            document.getElementById('mMap').innerText = pkg.Map || "Bermuda";
+            document.getElementById('mTime').innerText = pkg.Time || "TBA";
+            document.getElementById('mPrize').innerText = pkg.Prize_Pool || "Check Rules";
+            document.getElementById('mRules').innerText = pkg.Rules || "No Cheating!";
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        function closeM() { document.getElementById('detailsModal').style.display = 'none'; }
+        function redirectToLogin() {
+            alert("এই টুর্নামেন্টে যোগ দিতে আপনাকে অবশ্যই লগইন করতে হবে! 🌚");
+            window.location.href = 'index.html';
+        }
+
+        fetchGuestMatches();
+    </script>
+</body>
+</html>
