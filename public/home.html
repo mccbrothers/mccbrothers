@@ -19,7 +19,7 @@
         @keyframes burn { 0% { transform: rotate(-45deg) scale(1); opacity: 0.8; } 100% { transform: rotate(-45deg) scale(1.2); opacity: 1; } }
         .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 4px 8px; text-align: center; }
 
-        /* 💎 ব্যালেন্স বক্স ডিজাইন (Premium Equal Size) */
+        /* 💎 ব্যালেন্স বক্স ডিজাইন */
         .balance-container { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
         .premium-box {
             background: #161b22; padding: 5px 12px; border-radius: 12px; border: 1px solid #30363d;
@@ -117,6 +117,7 @@
         let timers = [];
         let lastShownBanner = "";
 
+        // ডাটা সিঙ্ক ফাংশন
         async function syncData() {
             try {
                 const res = await fetch(`/api/get-packages?gameId=${user.gameId}`);
@@ -129,7 +130,7 @@
             } catch (err) { console.error("Sync Error:", err); }
         }
 
-        // --- ব্যানার ফাংশন (X বাটন ইন-বক্স ফিক্সড) ---
+        // --- ব্যানার ফাংশন (CENTRALIZED FIX) ---
         async function fetchBannerFromSheet() {
             try {
                 const sheetUrl = "https://docs.google.com/spreadsheets/d/1jrwIZvzegH-bHAZx1SVCCzgn10HHLpFy2sEltx9PrUM/gviz/tq?tqx=out:csv&sheet=sheet1";
@@ -148,21 +149,27 @@
                     const existing = document.getElementById('sheetBannerPopup');
                     if (existing) existing.remove();
                 }
-            } catch (error) { console.log("Banner error"); }
+            } catch (error) { console.log("Banner fetch error"); }
         }
 
         function showBannerPopup(img, link) {
             if(document.getElementById('sheetBannerPopup')) document.getElementById('sheetBannerPopup').remove();
+            
+            // মেইন পপআপ HTML - একদম মাঝখানে আসার জন্য CSS আপডেট
             const bannerHtml = `
-            <div id="sheetBannerPopup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center; padding:20px; animation: fadeIn 0.5s;">
-                <div style="position:relative; width:100%; max-width:320px; background:#161b22; border-radius:15px; border:2px solid #ffcc00; overflow:hidden; box-shadow:0 0 25px rgba(255, 204, 0, 0.4);">
-                    <button onclick="document.getElementById('sheetBannerPopup').remove()" style="position:absolute; top:10px; right:10px; background:rgba(248, 81, 73, 0.9); color:white; border:none; width:28px; height:28px; border-radius:50%; font-weight:bold; cursor:pointer; z-index:10001; display:flex; align-items:center; justify-content:center; font-size:14px;">✕</button>
+            <div id="sheetBannerPopup" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center;">
+                <div style="position:relative; width:85%; max-width:320px; border-radius:15px; border:2px solid #ffcc00; box-shadow:0 0 25px rgba(255, 204, 0, 0.4); overflow:hidden; background:#161b22; animation: pop 0.4s ease-out;">
+                    
+                    <button onclick="document.getElementById('sheetBannerPopup').remove()" 
+                        style="position:absolute; top:8px; right:8px; background:rgba(248, 81, 73, 0.9); color:white; border:none; width:26px; height:26px; border-radius:50%; font-weight:bold; cursor:pointer; z-index:10001; font-size:12px; display:flex; align-items:center; justify-content:center;">✕</button>
+                    
                     <img src="${img}" onclick="if('${link}') window.location.href='${link}'" style="width:100%; display:block; cursor:pointer;">
                 </div>
             </div>`;
             document.body.insertAdjacentHTML('beforeend', bannerHtml);
         }
 
+        // বাকি সব ফাংশন আগের মতই সুরক্ষিত
         function renderMatches(joinedIds) {
             const list = document.getElementById('tournamentList');
             list.innerHTML = "";
@@ -251,6 +258,7 @@
 
         function closeM() { document.getElementById('detailsModal').style.display = 'none'; }
 
+        // ১০ সেকেন্ড পর পর সব সিঙ্ক হবে
         setInterval(() => {
             syncData();
             fetchBannerFromSheet();
@@ -260,5 +268,5 @@
         setTimeout(fetchBannerFromSheet, 3000);
     </script>
 </body>
-    </html>
-    
+            </html>
+                
