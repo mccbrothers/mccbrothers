@@ -19,49 +19,36 @@
         @keyframes burn { 0% { transform: rotate(-45deg) scale(1); opacity: 0.8; } 100% { transform: rotate(-45deg) scale(1.2); opacity: 1; } }
         .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 4px 8px; text-align: center; }
 
-        /* 💎 ব্যালেন্স বক্স ডিজাইন (দুইটাই সমান সাইজ) */
-        .balance-container {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: flex-end;
-        }
-
+        /* 💎 ব্যালেন্স বক্স ডিজাইন */
+        .balance-container { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
         .premium-box {
-            background: #161b22;
-            padding: 5px 12px;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 100px;
-            justify-content: space-between;
+            background: #161b22; padding: 5px 12px; border-radius: 12px; border: 1px solid #30363d;
+            display: flex; align-items: center; gap: 8px; min-width: 100px; justify-content: space-between;
         }
-
         .diamond-border { border-color: #58a6ff; box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
         .gold-border { border-color: #ffcc00; box-shadow: 0 0 8px rgba(255, 204, 0, 0.2); }
+        .add-btn { background: #58a6ff; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; }
 
-        .add-btn {
-            background: #58a6ff; width: 16px; height: 16px; 
-            border-radius: 50%; display: flex; align-items: center; 
-            justify-content: center; text-decoration: none;
-        }
-
-        /* 📋 কার্ড ও অন্যান্য স্টাইল (আপনার আগের কোড থেকে) */
+        /* 📋 টুর্নামেন্ট কার্ড ও ডিজাইন */
         .match-card { background: #161b22; border-radius: 15px; border: 1px solid #30363d; margin-bottom: 20px; overflow: hidden; position: relative; }
         .match-banner { width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid #30363d; }
         .card-content { padding: 15px; }
         .timer-badge { position: absolute; top: 10px; right: 10px; font-size: 11px; background: rgba(0, 0, 0, 0.7); color: #ffcc00; padding: 4px 8px; border-radius: 5px; border: 1px solid #ffcc00; font-weight: bold; z-index: 10; }
+        
         #detailsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
         .modal-card { background: #161b22; width: 85%; max-width: 400px; border-radius: 20px; border: 1px solid #58a6ff; padding: 20px; animation: pop 0.3s ease; }
         @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
         .detail-item { background: #0d1117; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #ff4500; font-size: 14px; }
         .applied-tag { color: #238636; font-weight: bold; font-size: 13px; border: 1px solid #238636; padding: 8px 15px; border-radius: 8px; background: rgba(35, 134, 54, 0.1); }
         .full-tag { color: #f85149; font-weight: bold; font-size: 14px; border: 1px solid #f85149; padding: 8px 15px; border-radius: 8px; }
+        
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
         .nav-btn { background:none; border:none; color:gray; cursor:pointer; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-btn.active { color:#58a6ff; font-weight:bold; }
+        
+        /* 🎨 এনিমেশন */
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
     </style>
 </head>
 <body>
@@ -124,13 +111,15 @@
     </div>
     
     <script>
-        // সেশন থেকে ডাটা শো
+        // ইউজার ডাটা ইনিশিয়ালাইজেশন
         document.getElementById('userCoins').innerText = user.coins || 0;
         document.getElementById('userIQ').innerText = user.iq_balance || 0;
 
         let allPackages = [];
         let timers = [];
+        let lastShownBanner = "";
 
+        // ১. ডাটা সিঙ্ক ফাংশন (আগের লজিক)
         async function syncData() {
             try {
                 const res = await fetch(`/api/get-packages?gameId=${user.gameId}`);
@@ -142,29 +131,44 @@
                 renderMatches(data.joinedPackages || []);
             } catch (err) {
                 console.error("Sync Error:", err);
-                document.getElementById('tournamentList').innerHTML = "<p style='color:red; text-align:center;'>Error loading matches!</p>";
             }
         }
 
-        function startTimer(targetTime, elementId) {
-            function update() {
-                const now = new Date();
-                const bdNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 6));
-                const diff = new Date(targetTime).getTime() - bdNow.getTime();
-                const el = document.getElementById(elementId);
-                if (!el) return;
-                if (diff <= 0) { el.innerText = "Ongoing / Closed"; el.style.color = "#ff7b72"; return; }
-                const d = Math.floor(diff / 86400000);
-                const h = Math.floor((diff % 86400000) / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                el.innerText = `Starts in: ${d}d ${h}h ${m}m ${s}s`;
-            }
-            update();
-            const t = setInterval(update, 1000);
-            timers.push(t);
+        // ২. ব্যানার চেক ফাংশন (গুগল শিট থেকে)
+        async function fetchBannerFromSheet() {
+            try {
+                const sheetUrl = "https://docs.google.com/spreadsheets/d/1jrwIZvzegH-bHAZx1SVCCzgn10HHLpFy2sEltx9PrUM/gviz/tq?tqx=out:csv&sheet=sheet1";
+                const response = await fetch(sheetUrl);
+                const csvText = await response.text();
+                const rows = csvText.split('\n').map(row => row.split(',').map(cell => cell.replace(/"/g, '')));
+                
+                const status = rows[1][0];
+                const imageUrl = rows[1][1];
+                const linkUrl = rows[1][2];
+
+                if (status === "active" && imageUrl !== lastShownBanner) {
+                    lastShownBanner = imageUrl;
+                    showBannerPopup(imageUrl, linkUrl);
+                } else if (status !== "active") {
+                    const existing = document.getElementById('sheetBannerPopup');
+                    if (existing) existing.remove();
+                }
+            } catch (error) { console.log("Banner fetch error"); }
         }
 
+        function showBannerPopup(img, link) {
+            if(document.getElementById('sheetBannerPopup')) document.getElementById('sheetBannerPopup').remove();
+            const bannerHtml = `
+            <div id="sheetBannerPopup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center; padding:20px; animation: fadeIn 0.5s;">
+                <div style="position:relative; width:100%; max-width:350px;">
+                    <button onclick="document.getElementById('sheetBannerPopup').remove()" style="position:absolute; top:-15px; right:-15px; background:#f85149; color:white; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer; box-shadow:0 0 10px rgba(0,0,0,0.5);">X</button>
+                    <img src="${img}" onclick="if('${link}') window.location.href='${link}'" style="width:100%; border-radius:15px; border:2px solid #ffcc00; cursor:pointer; box-shadow:0 0 25px rgba(255, 204, 0, 0.4);">
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', bannerHtml);
+        }
+
+        // ৩. রেন্ডার ম্যাচেস (আগের লজিক)
         function renderMatches(joinedIds) {
             const list = document.getElementById('tournamentList');
             list.innerHTML = "";
@@ -198,10 +202,29 @@
                                 ${actionButton}
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 if (!isGame && pkg.Time) startTimer(pkg.Time, timerId);
             });
+        }
+
+        // ৪. টাইমার এবং মডাল ফাংশন (আগের লজিক)
+        function startTimer(targetTime, elementId) {
+            function update() {
+                const now = new Date();
+                const bdNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 6));
+                const diff = new Date(targetTime).getTime() - bdNow.getTime();
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                if (diff <= 0) { el.innerText = "Ongoing / Closed"; el.style.color = "#ff7b72"; return; }
+                const d = Math.floor(diff / 86400000);
+                const h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                el.innerText = `Starts in: ${d}d ${h}h ${m}m ${s}s`;
+            }
+            update();
+            const t = setInterval(update, 1000);
+            timers.push(t);
         }
 
         function openM(id) {
@@ -214,8 +237,7 @@
             document.getElementById('mPrize').innerText = pkg.Prize_Pool || "Double Win";
             document.getElementById('mRules').innerText = pkg.Rules || "No Cheating!";
             const joinBtn = document.getElementById('joinConfirmBtn');
-            joinBtn.disabled = false;
-            joinBtn.innerText = "Confirm Join";
+            joinBtn.disabled = false; joinBtn.innerText = "Confirm Join";
             joinBtn.onclick = () => processJoin(pkg);
             document.getElementById('detailsModal').style.display = 'flex';
         }
@@ -229,15 +251,23 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ gameId: user.gameId, fee: pkg.Fee, packageName: pkg.Title, matchId: pkg.Match_ID || "", userName: user.name })
                 });
-                const result = await res.json();
                 if (res.ok) { alert("Tournament Joined Successfully! ✅"); window.location.reload(); }
-                else { alert(result.message || "Join failed!"); btn.disabled = false; btn.innerText = "Confirm Join"; }
-            } catch (e) { alert("Network Error! Try again."); btn.disabled = false; btn.innerText = "Confirm Join"; }
+                else { alert("Join failed!"); btn.disabled = false; btn.innerText = "Confirm Join"; }
+            } catch (e) { alert("Error!"); btn.disabled = false; }
         }
 
         function closeM() { document.getElementById('detailsModal').style.display = 'none'; }
+
+        // --- অটোমেটিক চেক লুপ (প্রতি ১০ সেকেন্ড পর পর) ---
+        setInterval(() => {
+            syncData();
+            fetchBannerFromSheet();
+        }, 10000);
+
+        // পেজ লোড হবার পর প্রথমবার রান
         syncData();
+        setTimeout(fetchBannerFromSheet, 3000);
     </script>
 </body>
-                </html>
-    
+        </html>
+            
