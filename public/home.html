@@ -153,10 +153,10 @@
 
                 const matchImg = pkg.img || "https://placehold.co/600x300/161b22/58a6ff?text=No+Image";
 
-                // নতুন ফিচার: যদি টাইপ 'Game' হয় তবে সরাসরি গেম পেজে পাঠাবে
+                // 🔥 নতুন চেক: টাইপ যদি 'Game' হয় তবে সরাসরি game.html লিঙ্কে যাবে
                 const isGame = pkg.Type === "Game";
                 const actionButton = isGame 
-                    ? `<button onclick="location.href='game.html'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`
+                    ? `<button onclick="window.location.href='game.html'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`
                     : (isJoined ? 
                         `<span class="applied-tag">Applied ✅</span>` : 
                         (isFull ? 
@@ -188,6 +188,12 @@
         function openM(id) {
             const pkg = allPackages.find(p => (p.Match_ID === id || p.Title === id));
             if(!pkg) return;
+
+            // যদি এটি ভুল করে গেম হয় তবে মডাল না খুলে সরাসরি রিডাইরেক্ট করবে
+            if(pkg.Type === "Game") {
+                window.location.href = 'game.html';
+                return;
+            }
 
             document.getElementById('mTitle').innerText = pkg.Title;
             document.getElementById('mMap').innerText = pkg.Map || "TBA";
@@ -244,5 +250,4 @@
         syncData();
     </script>
 </body>
-              </html>
-  
+</html>
