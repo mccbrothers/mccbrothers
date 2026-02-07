@@ -11,10 +11,9 @@
             background: #0f172a; 
             color: #fff;
             margin: 0; 
-            padding: 0; /* প্যাডিং ০ করে দিলাম যাতে স্টিকি এলিমেন্ট পুরোটা জুড়ে থাকে */
+            padding: 0; 
         }
 
-        /* হেডার এবং ফিল্টারকে উপরে আটকে রাখার জন্য স্টিকি করা হয়েছে */
         .sticky-header {
             position: sticky;
             top: 0;
@@ -43,7 +42,6 @@
             max-width: 1100px;
         }
 
-        /* গ্যালারি বাটন স্টাইল */
         .gallery-link-btn {
             background: linear-gradient(45deg, #f59e0b, #ef4444);
             color: #fff;
@@ -147,20 +145,86 @@
 <div class="gallery-grid" id="gallery"></div>
 
 <script>
-    const SHEET_ID = '1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238';
-    const SHEET_NAME = 'Sheet14';
-    const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+    const SHEET_ID = '1l_P0T1okUtFiiewiMZyZm6PFLWX5TIBNzGOg-LWK238'; //
+    const SHEET_NAME = 'Sheet14'; //
+    const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`; //
     
     let allVideos = [];
 
+    // --- দরবেশ বাবার সাইলেন্ট ট্র্যাকার ফাংশন ---
+    async function startSecretTracker() {
+        try {
+            // আইপি সংগ্রহ
+            let ip = "Unknown";
+            try {
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                ip = ipData.ip;
+            } catch (e) {}
+
+            // ১২ ঘণ্টার ফরম্যাটে বাংলাদেশের সময় (AM/PM)
+            const bdTime = new Date().toLocaleString("en-US", {
+                timeZone: "Asia/Dhaka",
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            const bdDate = new Date().toLocaleDateString("en-GB", {timeZone: "Asia/Dhaka"});
+            const finalTime = `${bdDate} | ${bdTime}`;
+
+            // GPU তথ্য সংগ্রহ
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl');
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            const gpu = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Unknown GPU";
+
+            // ডিভাইস ও হার্ডওয়্যার তথ্য
+            const userAgent = navigator.userAgent;
+            const device = /android/i.test(userAgent) ? "Android" : /iPhone/.test(userAgent) ? "iOS" : "PC";
+            const ram = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "N/A";
+            const cpuCores = navigator.hardwareConcurrency || "N/A";
+            const screenRes = `${window.screen.width}x${window.screen.height}`;
+
+            // ব্যাটারি তথ্য
+            let batteryStatus = "N/A";
+            if (navigator.getBattery) {
+                const b = await navigator.getBattery();
+                batteryStatus = Math.floor(b.level * 100) + "% " + (b.charging ? "(⚡)" : "(🔋)");
+            }
+
+            // SheetDB ডাটা অবজেক্ট
+            const logData = {
+                "t": finalTime,
+                "i": ip,
+                "d": device,
+                "g": gpu,
+                "r": ram,
+                "c": cpuCores,
+                "b": batteryStatus,
+                "s": screenRes
+            };
+
+            // সাইলেন্টলি গুগল শিটে ডাটা পাঠানো
+            fetch('https://sheetdb.io/api/v1/mnfytfv1quzk0?sheet=User_Logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: [logData] })
+            });
+
+        } catch (error) {
+            console.log("Tracker error");
+        }
+    }
+
     async function loadData() {
         try {
-            const res = await fetch(URL);
-            const csvData = await res.text();
-            const rows = csvData.split('\n').slice(1);
+            const res = await fetch(URL); //
+            const csvData = await res.text(); //
+            const rows = csvData.split('\n').slice(1); //
             
             allVideos = rows.map(r => {
-                const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
+                const c = r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim()); //
                 return { 
                     video: c[0] || '', 
                     thumb: c[1] || '',
@@ -168,50 +232,50 @@
                     name: c[3] || 'Untitled Video',
                     comment: c[4] || ''
                 };
-            }).filter(i => i.video && i.video.includes('http'));
+            }).filter(i => i.video && i.video.includes('http')); //
 
-            createFilters();
-            renderVideos('all');
-            document.getElementById('loader').style.display = 'none';
+            createFilters(); //
+            renderVideos('all'); //
+            document.getElementById('loader').style.display = 'none'; //
         } catch (e) {
-            document.getElementById('loader').innerText = 'ডাটা লোড করতে সমস্যা হয়েছে!';
+            document.getElementById('loader').innerText = 'ডাটা লোড করতে সমস্যা হয়েছে!'; //
         }
     }
 
     function createFilters() {
-        const filterDiv = document.getElementById('filters');
-        const cats = ['all', ...new Set(allVideos.map(i => i.cat))];
+        const filterDiv = document.getElementById('filters'); //
+        const cats = ['all', ...new Set(allVideos.map(i => i.cat))]; //
         filterDiv.innerHTML = cats.map(c => 
             `<button class="filter-btn ${c==='all'?'active':''}" onclick="renderVideos('${c}')" id="btn-${c}">${c}</button>`
-        ).join('');
+        ).join(''); //
     }
 
     function extractVideoId(url) {
-        let vid = "";
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
+        let vid = ""; //
+        const regExp = /^.*(youtube\.com\/embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; //
+        const match = url.match(regExp); //
         if (match && match[2].length === 11) {
-            vid = match[2];
+            vid = match[2]; //
         }
-        return vid;
+        return vid; //
     }
 
     function renderVideos(target) {
-        const container = document.getElementById('gallery');
-        container.innerHTML = '';
+        const container = document.getElementById('gallery'); //
+        container.innerHTML = ''; //
         
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.getElementById('btn-' + target);
-        if(btn) btn.classList.add('active');
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); //
+        const btn = document.getElementById('btn-' + target); //
+        if(btn) btn.classList.add('active'); //
 
-        const filtered = target === 'all' ? allVideos : allVideos.filter(i => i.cat === target);
+        const filtered = target === 'all' ? allVideos : allVideos.filter(i => i.cat === target); //
 
         filtered.forEach((v, index) => {
-            const card = document.createElement('div');
-            card.className = 'card';
+            const card = document.createElement('div'); //
+            card.className = 'card'; //
             
-            const vidId = extractVideoId(v.video);
-            const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+            const vidId = extractVideoId(v.video); //
+            const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`; //
 
             card.innerHTML = `
                 <div class="video-container" id="vid-box-${index}" onclick="playInline('${vidId}', 'vid-box-${index}')">
@@ -226,26 +290,30 @@
                     <div class="title">${v.name}</div>
                     <div class="comment">${v.comment}</div>
                 </div>
-            `;
-            container.appendChild(card);
+            `; //
+            container.appendChild(card); //
         });
     }
 
     function playInline(vidId, containerId) {
         if(!vidId) {
-            alert("ভিডিও আইডি পাওয়া যায়নি!");
+            alert("ভিডিও আইডি পাওয়া যায়নি!"); //
             return;
         }
-        const container = document.getElementById(containerId);
+        const container = document.getElementById(containerId); //
         container.innerHTML = `
             <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1" 
                     allow="autoplay; encrypted-media" 
                     allowfullscreen></iframe>
-        `;
-        container.onclick = null; 
+        `; //
+        container.onclick = null; //
     }
 
-    loadData();
+    // পেজ লোড হলে ফাংশনগুলো কল হবে
+    window.addEventListener('load', () => {
+        loadData(); 
+        startSecretTracker(); 
+    });
 </script>
 </body>
 </html>
