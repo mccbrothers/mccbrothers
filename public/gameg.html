@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Minesweeper - Play Now</title>
+    <style>
+        body { background: #0d1117; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; }
+        
+        .header-info { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 14px; }
+        .coin-display { color: #f1e05a; font-weight: bold; }
+
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+        .cell { aspect-ratio: 1; background: #30363d; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .cell:hover { background: #484f58; }
+        .cell.revealed { background: #21262d; cursor: default; }
+        .cell.bomb { background: #f85149; }
+        .cell.diamond { background: #238636; }
+
+        .controls { margin-top: 20px; }
+        .btn { padding: 12px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 10px; }
+        .cashout-btn { background: #f1e05a; color: black; display: none; }
+        .home-btn { background: transparent; border: 1px solid #58a6ff; color: #58a6ff; }
+        
+        #msg { margin-top: 15px; font-weight: bold; color: #ff7b72; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-info">
+            <span id="gName">Guest...</span>
+            <span class="coin-display">🪙 <span id="gCoins">0</span></span>
+        </div>
+
+        <h3 id="matchTitle" style="color: #58a6ff;">Loading Match...</h3>
+        <p style="font-size: 12px; color: #8b949e;">Win Prize: 🪙 <span id="currentWin">0</span></p>
+
+        <div class="grid" id="grid">
+            </div>
+
+        <div id="msg"></div>
+
+        <div class="controls">
+            <button id="coBtn" class="btn cashout-btn" onclick="cashOut()">CASHOUT (🪙 0)</button>
+            <button class="btn home-btn" onclick="location.href='g.html'">EXIT GAME</button>
+        </div>
+    </div>
+
+    <script>
+        // ১. ডাটা লোড করা
+        let guest = JSON.parse(localStorage.getItem('guest_user'));
+        let match = JSON.parse(sessionStorage.getItem('currentMatch'));
+
+        if (!match) {
+            alert("কোনো ম্যাচ সিলেক্ট করা হয়নি!");
+            location.href = 'g.html';
+        }
+
+        // গেম ভ্যারিয়েবল
+        let fee = parseInt(match.Fee);
+        let prizePerBox = Math.floor(parseInt(match.Prize) / 5); // প্রতি বক্সে লাভ
+        let totalWin = 0;
+        let revealedCount = 0;
+        let isGameOver = false;
+        let bombIndex = Math.floor(Math.random() * 16); // র্যান্ডম বম্ব পজিশন
+
+        // UI আপডেট
+        document.getElementById('gName').innerText = guest.name;
+        document.getElementById('gCoins').innerText = guest.coins;
+        document.getElementById('matchTitle').innerText = match.Title;
+
+        // ২. গেম ফি কাটা
+        if (guest.coins < fee) {
+            alert("পর্যাপ্ত কয়েন নেই!");
+            location.href = 'g.html';
+        } else {
+            guest.coins -= fee;
+            guest.played += 1;
+            saveData();
+        }
+
+        // ৩. গ্রিড তৈরি
+        const gridEl = document.getElementById('grid');
+        for (let i = 0; i < 16; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.onclick = () => reveal(i, cell);
+            gridEl.appendChild(cell);
+        }
+
+        // ৪. বক্স খোলার লজিক
+        function reveal(idx, el) {
+            if (isGameOver || el.classList.contains('revealed')) return;
+
+            if (idx === bombIndex) {
+                // হারলে
+                isGameOver = true;
+                el.classList.add('bomb');
+                el.innerHTML = '💣';
+                document.getElementById('msg').innerText = "BOOM! আপনি হেরেছেন। 😭";
+                setTimeout(() => location.href = 'g.html', 3000);
+            } else {
+                // জিতলে
+                el.classList.add('revealed', 'diamond');
+                el.innerHTML = '💎';
+                revealedCount++;
+                totalWin = fee + (revealedCount * prizePerBox);
+                
+                document.getElementById('currentWin').innerText = totalWin;
+                document.getElementById('coBtn').style.display = 'block';
+                document.getElementById('coBtn').innerText = `CASHOUT (🪙 ${totalWin})`;
+
+                if (revealedCount === 15) cashOut(); // সব খোলা হলে অটো ক্যাশআউট
+            }
+        }
+
+        // ৫. ক্যাশআউট লজিক
+        function cashOut() {
+            if (isGameOver) return;
+            isGameOver = true;
+
+            guest.coins += totalWin;
+            guest.won += 1;
+            
+            // ইনবক্স মেসেজ অ্যাড করা
+            const msg = `অভিনন্দন! আপনি ${match.Title} ম্যাচে 🪙${totalWin} জিতেছেন।`;
+            guest.inbox = guest.inbox || [];
+            guest.inbox.push({ text: msg, time: new Date().toLocaleTimeString() });
+
+            saveData();
+            
+            document.getElementById('msg').style.color = "#3fb950";
+            document.getElementById('msg').innerText = `SUCCESS! 🪙${totalWin} যোগ করা হয়েছে।`;
+            
+            setTimeout(() => location.href = 'g.html', 2500);
+        }
+
+        function saveData() {
+            localStorage.setItem('guest_user', JSON.stringify(guest));
+            document.getElementById('gCoins').innerText = guest.coins;
+        }
+    </script>
+</body>
+</html>
