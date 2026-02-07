@@ -19,31 +19,36 @@
         @keyframes burn { 0% { transform: rotate(-45deg) scale(1); opacity: 0.8; } 100% { transform: rotate(-45deg) scale(1.2); opacity: 1; } }
         .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 4px 8px; text-align: center; }
 
-        /* 💎 প্রিমিয়াম ডায়মন্ড বক্স ডিজাইন */
-        .diamond-box {
-            background: linear-gradient(145deg, #1e252e, #0d1117);
-            padding: 5px 10px; border-radius: 20px;
-            border: 1px solid #58a6ff; display: inline-flex;
-            align-items: center; gap: 8px;
-            box-shadow: 0 0 12px rgba(88, 166, 255, 0.3);
+        /* 💎 ব্যালেন্স বক্স ডিজাইন (দুইটাই সমান সাইজ) */
+        .balance-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
         }
+
+        .premium-box {
+            background: #161b22;
+            padding: 5px 12px;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 100px;
+            justify-content: space-between;
+        }
+
+        .diamond-border { border-color: #58a6ff; box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
+        .gold-border { border-color: #ffcc00; box-shadow: 0 0 8px rgba(255, 204, 0, 0.2); }
+
         .add-btn {
-            background: #58a6ff; width: 18px; height: 18px; 
+            background: #58a6ff; width: 16px; height: 16px; 
             border-radius: 50%; display: flex; align-items: center; 
             justify-content: center; text-decoration: none;
-            box-shadow: 0 0 8px #58a6ff;
         }
 
-        /* 🪙 আইকিউ গোল্ড (ডায়মন্ডের নিচে ছোট করে) */
-        .iq-mini-box {
-            margin-top: 5px; font-size: 11px; color: #ffcc00;
-            background: rgba(255, 204, 0, 0.1);
-            padding: 2px 8px; border-radius: 10px;
-            border: 0.5px solid rgba(255, 204, 0, 0.3);
-            display: inline-flex; align-items: center; gap: 4px;
-        }
-
-        /* 📋 কার্ড ও অন্যান্য স্টাইল */
+        /* 📋 কার্ড ও অন্যান্য স্টাইল (আপনার আগের কোড থেকে) */
         .match-card { background: #161b22; border-radius: 15px; border: 1px solid #30363d; margin-bottom: 20px; overflow: hidden; position: relative; }
         .match-banner { width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid #30363d; }
         .card-content { padding: 15px; }
@@ -77,15 +82,16 @@
 
         <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">Zfox_Fc 🏆26</h3>
         
-        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-            <div class="diamond-box">
-                 <span style="font-size: 14px; font-weight: bold; color: #fff; text-shadow: 0 0 5px #58a6ff;">💎 <span id="userCoins">0</span></span>
+        <div class="balance-container">
+            <div class="premium-box diamond-border">
+                 <span style="font-size: 13px; font-weight: bold; color: white;">💎 <span id="userCoins">0</span></span>
                 <a href="add-money.html" class="add-btn">
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
                 </a>
             </div>
-            <div class="iq-mini-box" onclick="location.href='game.html'">
-                <span>🪙</span> <span id="userIQ">0</span> <span style="font-size: 8px; opacity: 0.8;">IQ</span>
+            <div class="premium-box gold-border" onclick="location.href='game.html'" style="cursor: pointer;">
+                 <span style="font-size: 13px; font-weight: bold; color: #ffcc00;">🪙 <span id="userIQ">0</span></span>
+                 <span style="font-size: 9px; color: gray; font-weight: bold;">IQ</span>
             </div>
         </div>
     </div>
@@ -233,5 +239,5 @@
         syncData();
     </script>
 </body>
-            </html>
-                                                        
+                </html>
+    
