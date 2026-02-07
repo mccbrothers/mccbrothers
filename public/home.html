@@ -7,7 +7,7 @@
     <style>
         body { background-color: #0d1117; color: white; margin: 0; padding-bottom: 80px; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         
-        /* 🔥 স্টোর বাটন */
+        /* 🔥 স্টোর বাটন এনিমেশন */
         .fire-wrapper { position: relative; width: 60px; height: 60px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
         .flame {
             position: absolute; bottom: 15px; width: 35px; height: 35px;
@@ -19,7 +19,7 @@
         @keyframes burn { 0% { transform: rotate(-45deg) scale(1); opacity: 0.8; } 100% { transform: rotate(-45deg) scale(1.2); opacity: 1; } }
         .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 4px 8px; text-align: center; }
 
-        /* 💎 ব্যালেন্স বক্স ডিজাইন */
+        /* 💎 ব্যালেন্স বক্স ডিজাইন (Premium Equal Size) */
         .balance-container { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
         .premium-box {
             background: #161b22; padding: 5px 12px; border-radius: 12px; border: 1px solid #30363d;
@@ -47,7 +47,6 @@
         .nav-btn { background:none; border:none; color:gray; cursor:pointer; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-btn.active { color:#58a6ff; font-weight:bold; }
         
-        /* 🎨 এনিমেশন */
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
     </style>
 </head>
@@ -111,7 +110,6 @@
     </div>
     
     <script>
-        // ইউজার ডাটা ইনিশিয়ালাইজেশন
         document.getElementById('userCoins').innerText = user.coins || 0;
         document.getElementById('userIQ').innerText = user.iq_balance || 0;
 
@@ -119,7 +117,6 @@
         let timers = [];
         let lastShownBanner = "";
 
-        // ১. ডাটা সিঙ্ক ফাংশন (আগের লজিক)
         async function syncData() {
             try {
                 const res = await fetch(`/api/get-packages?gameId=${user.gameId}`);
@@ -129,12 +126,10 @@
                 document.getElementById('userCoins').innerText = data.coins;
                 document.getElementById('userIQ').innerText = data.iq_balance || 0;
                 renderMatches(data.joinedPackages || []);
-            } catch (err) {
-                console.error("Sync Error:", err);
-            }
+            } catch (err) { console.error("Sync Error:", err); }
         }
 
-        // ২. ব্যানার চেক ফাংশন (গুগল শিট থেকে)
+        // --- ব্যানার ফাংশন (X বাটন ইন-বক্স ফিক্সড) ---
         async function fetchBannerFromSheet() {
             try {
                 const sheetUrl = "https://docs.google.com/spreadsheets/d/1jrwIZvzegH-bHAZx1SVCCzgn10HHLpFy2sEltx9PrUM/gviz/tq?tqx=out:csv&sheet=sheet1";
@@ -153,22 +148,21 @@
                     const existing = document.getElementById('sheetBannerPopup');
                     if (existing) existing.remove();
                 }
-            } catch (error) { console.log("Banner fetch error"); }
+            } catch (error) { console.log("Banner error"); }
         }
 
         function showBannerPopup(img, link) {
             if(document.getElementById('sheetBannerPopup')) document.getElementById('sheetBannerPopup').remove();
             const bannerHtml = `
             <div id="sheetBannerPopup" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center; padding:20px; animation: fadeIn 0.5s;">
-                <div style="position:relative; width:100%; max-width:350px;">
-                    <button onclick="document.getElementById('sheetBannerPopup').remove()" style="position:absolute; top:-15px; right:-15px; background:#f85149; color:white; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold; cursor:pointer; box-shadow:0 0 10px rgba(0,0,0,0.5);">X</button>
-                    <img src="${img}" onclick="if('${link}') window.location.href='${link}'" style="width:100%; border-radius:15px; border:2px solid #ffcc00; cursor:pointer; box-shadow:0 0 25px rgba(255, 204, 0, 0.4);">
+                <div style="position:relative; width:100%; max-width:320px; background:#161b22; border-radius:15px; border:2px solid #ffcc00; overflow:hidden; box-shadow:0 0 25px rgba(255, 204, 0, 0.4);">
+                    <button onclick="document.getElementById('sheetBannerPopup').remove()" style="position:absolute; top:10px; right:10px; background:rgba(248, 81, 73, 0.9); color:white; border:none; width:28px; height:28px; border-radius:50%; font-weight:bold; cursor:pointer; z-index:10001; display:flex; align-items:center; justify-content:center; font-size:14px;">✕</button>
+                    <img src="${img}" onclick="if('${link}') window.location.href='${link}'" style="width:100%; display:block; cursor:pointer;">
                 </div>
             </div>`;
             document.body.insertAdjacentHTML('beforeend', bannerHtml);
         }
 
-        // ৩. রেন্ডার ম্যাচেস (আগের লজিক)
         function renderMatches(joinedIds) {
             const list = document.getElementById('tournamentList');
             list.innerHTML = "";
@@ -207,7 +201,6 @@
             });
         }
 
-        // ৪. টাইমার এবং মডাল ফাংশন (আগের লজিক)
         function startTimer(targetTime, elementId) {
             function update() {
                 const now = new Date();
@@ -258,16 +251,14 @@
 
         function closeM() { document.getElementById('detailsModal').style.display = 'none'; }
 
-        // --- অটোমেটিক চেক লুপ (প্রতি ১০ সেকেন্ড পর পর) ---
         setInterval(() => {
             syncData();
             fetchBannerFromSheet();
         }, 10000);
 
-        // পেজ লোড হবার পর প্রথমবার রান
         syncData();
         setTimeout(fetchBannerFromSheet, 3000);
     </script>
 </body>
-        </html>
-            
+    </html>
+    
