@@ -3,88 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minesweeper Pro - Dashboard</title>
+    <title>Minesweeper Pro</title>
     <style>
-        :root {
-            --bg: #0d1117;
-            --card-bg: #161b22;
-            --primary: #58a6ff;
-            --success: #238636;
-            --danger: #f85149;
-            --warning: #f1e05a;
-            --border: #30363d;
-        }
-
-        body { 
-            background-color: var(--bg); 
-            color: white; 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            margin: 0; padding: 20px; 
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        .container { 
-            width: 100%; max-width: 400px; 
-            background: var(--card-bg); 
-            padding: 20px; border-radius: 20px; 
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
-
-        /* প্যাকেজ সিলেকশন এরিয়া */
-        .setup-area { display: flex; flex-direction: column; gap: 10px; }
-        .pkg-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        body { background: #0d1117; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; }
         
-        .btn-pkg { 
-            background: #21262d; border: 1px solid var(--border); 
-            color: white; padding: 15px; border-radius: 12px; cursor: pointer; 
-            transition: 0.3s; font-weight: bold; font-size: 14px;
-        }
-        .btn-pkg:hover { border-color: var(--primary); background: #30363d; }
-        .btn-pkg.active { background: var(--primary); border-color: var(--primary); color: #000; }
+        /* প্যাকেজ বাটন স্টাইল */
+        .pkg-btn { padding: 10px; margin: 5px; cursor: pointer; border: 1px solid #58a6ff; background: transparent; color: #58a6ff; border-radius: 5px; width: 30%; }
+        .active-pkg { background: #58a6ff !important; color: white !important; }
+        
+        /* পেমেন্ট বাটন */
+        .pay-btn { padding: 10px; margin: 5px; cursor: pointer; border: 1px solid #f1e05a; background: transparent; color: #f1e05a; border-radius: 5px; width: 45%; }
+        .active-pay { background: #f1e05a !important; color: black !important; }
 
-        /* পেমেন্ট মেথড সিলেকশন */
-        .payment-label { font-size: 12px; color: #8b949e; margin-top: 5px; text-align: left; }
-        .payment-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .btn-pay { 
-            flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
-            background: #21262d; color: white; cursor: pointer; font-size: 13px;
-        }
-        .btn-pay.active { border-color: var(--warning); color: var(--warning); background: rgba(241, 224, 90, 0.1); }
-
-        /* গেম গ্রিড ডিজাইন */
-        .grid { 
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; 
-            margin: 20px 0; perspective: 1000px;
-        }
+        /* গ্রিড ডিজাইন - যেন মানুষ বোঝে টাচ করতে হবে */
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
         .cell { 
-            aspect-ratio: 1/1; background: linear-gradient(145deg, #21262d, #161b22);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; border-radius: 10px; border: 1px solid var(--border);
-            box-shadow: inset 2px 2px 5px rgba(255,255,255,0.05), 3px 3px 10px rgba(0,0,0,0.3);
-            transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            aspect-ratio: 1/1; background: #21262d; border: 2px solid #30363d; 
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; 
+            font-size: 20px; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 0 #000; /* বক্সগুলো উচু দেখা যাবে */
         }
-        .cell:hover { transform: scale(1.05); background: #30363d; border-color: var(--primary); }
-        .cell:active { transform: scale(0.95); }
-        
-        /* বক্সগুলো যখন টাচ করা হবে */
-        .revealed { background: #0d1117 !important; border-color: var(--primary); box-shadow: none; cursor: default; }
-        .bomb { background: var(--danger) !important; border-color: var(--danger); animation: shake 0.5s; }
+        .cell:active { transform: translateY(3px); box-shadow: none; }
+        .revealed { background: #0d1117 !important; border-color: #58a6ff; box-shadow: none !important; cursor: default; }
+        .bomb { background: #f85149 !important; }
 
-        /* স্ট্যাটাস ও বাটন */
-        .stats { display: flex; justify-content: space-between; background: #0d1117; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-weight: bold; border: 1px solid var(--border); }
-        .btn-start { background: var(--success); color: white; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; width: 100%; font-size: 16px; }
-        .btn-cashout { background: var(--warning); color: #000; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; display: none; }
-        
-        #statusMsg { margin-top: 15px; font-size: 14px; text-align: center; font-weight: 500; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
+        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .start { background: #238636; color: white; }
+        .cashout { background: #f1e05a; color: black; display: none; }
+        #msg { margin-top: 15px; font-size: 14px; font-weight: bold; color: #ffcc00; }
     </style>
 </head>
 <body>
@@ -92,102 +39,92 @@
 <div class="container">
     <h2>💣 MINESWEEPER</h2>
 
-    <div id="setupArea">
-        <div class="payment-label">প্যাকেজ সিলেক্ট করুন:</div>
-        <div class="pkg-group">
-            <button class="btn-pkg" onclick="selectPkg('Free', this)">IQ MODE</button>
-            <button class="btn-pkg" onclick="selectPkg('5tk', this)">5 TK</button>
-            <button class="btn-pkg active" onclick="selectPkg('10tk', this)">10 TK</button>
-            <button class="btn-pkg" onclick="selectPkg('50tk', this)">50 TK</button>
-            <button class="btn-pkg" onclick="selectPkg('100tk', this)">100 TK</button>
-        </div>
+    <div id="setup">
+        <p>প্যাকেজ বেছে নিন:</p>
+        <button class="pkg-btn" onclick="setPkg('Free', this)">FREE</button>
+        <button class="pkg-btn" onclick="setPkg('5tk', this)">5 TK</button>
+        <button class="pkg-btn active-pkg" onclick="setPkg('10tk', this)">10 TK</button>
+        <button class="pkg-btn" onclick="setPkg('50tk', this)">50 TK</button>
+        <button class="pkg-btn" onclick="setPkg('100tk', this)">100 TK</button>
 
-        <div class="payment-label">পেমেন্ট মেথড:</div>
-        <div class="payment-group">
-            <button id="payReal" class="btn-pay active" onclick="selectPay('Real')">REAL COINS</button>
-            <button id="payIQ" class="btn-pay" onclick="selectPay('IQ')">IQ BALANCE</button>
-        </div>
+        <p>পেমেন্ট মেথড:</p>
+        <button id="pReal" class="pay-btn active-pay" onclick="setPay('Real')">REAL COIN</button>
+        <button id="pIQ" class="pay-btn" onclick="setPay('IQ')">IQ BALANCE</button>
 
-        <button class="btn-start" onclick="initGame()">গেম শুরু করুন</button>
+        <button class="btn-main start" onclick="startGame()">গেম শুরু করুন</button>
     </div>
 
-    <div id="gameArea" style="display: none;">
-        <div class="stats">
-            <span>লাভ: <span id="winDisplay" style="color:var(--warning)">0.00</span></span>
-            <span id="payIcon">🪙</span>
+    <div id="gameArea" style="display:none;">
+        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+            <span>লাভ: <span id="winTxt">0.00</span></span>
+            <span id="modeTxt"></span>
         </div>
-        <div class="grid" id="grid"></div>
-        <button id="cashoutBtn" class="btn-cashout" onclick="cashOut()">CASH OUT</button>
+        <div class="grid" id="board"></div>
+        <button id="coBtn" class="btn-main cashout" onclick="cashOut()">টাকা তুলে নিন</button>
     </div>
 
-    <div id="statusMsg">সার্ভার স্ট্যাটাস: অনলাইন ✅</div>
+    <div id="msg">সার্ভার অনলাইন ✅</div>
 </div>
 
 <script>
     const user = JSON.parse(sessionStorage.getItem('user'));
-    let selectedPackage = '10tk';
-    let selectedPayment = 'Real';
-    let isGameOver = false;
+    let selectedPkg = '10tk';
+    let selectedPay = 'Real';
+    let isEnded = false;
 
-    // নিরাপত্তা চেক
-    if (!user || !user.gameId) { window.location.href = 'index.html'; }
+    if (!user) window.location.href = 'index.html';
 
-    function selectPkg(pkg, btn) {
-        selectedPackage = pkg;
-        document.querySelectorAll('.btn-pkg').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        // ফ্রি মোড হলে অটো IQ পেমেন্ট সেট হবে
-        if(pkg === 'Free') selectPay('IQ');
+    function setPkg(p, btn) {
+        selectedPkg = p;
+        document.querySelectorAll('.pkg-btn').forEach(b => b.classList.remove('active-pkg'));
+        btn.classList.add('active-pkg');
+        if(p === 'Free') setPay('IQ');
     }
 
-    function selectPay(type) {
-        selectedPayment = type;
-        document.querySelectorAll('.btn-pay').forEach(b => b.classList.remove('active'));
-        if(type === 'Real') document.getElementById('payReal').classList.add('active');
-        else document.getElementById('payIQ').classList.add('active');
+    function setPay(type) {
+        selectedPay = type;
+        document.getElementById('pReal').className = type === 'Real' ? 'pay-btn active-pay' : 'pay-btn';
+        document.getElementById('pIQ').className = type === 'IQ' ? 'pay-btn active-pay' : 'pay-btn';
     }
 
-    async function initGame() {
-        updateStatus("ভেরিফাই করা হচ্ছে...", "var(--primary)");
+    async function startGame() {
         const res = await fetch('/api/game', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 action: 'start',
                 gameId: user.gameId,
-                packageName: selectedPackage,
-                paymentType: selectedPayment,
+                packageName: selectedPkg,
+                paymentType: selectedPay,
                 userName: user.name
             })
         });
 
         const data = await res.json();
-        if(res.ok) {
-            document.getElementById('setupArea').style.display = 'none';
+        if (res.ok) {
+            document.getElementById('setup').style.display = 'none';
             document.getElementById('gameArea').style.display = 'block';
-            document.getElementById('payIcon').innerText = selectedPayment === 'IQ' ? '🧠 IQ' : '🪙 Coin';
-            updateStatus("গেম শুরু! সাবধানে ক্লিক করুন।", var(--success));
-            createGrid();
+            document.getElementById('modeTxt').innerText = selectedPay === 'Real' ? '🪙 Real' : '🧠 IQ';
+            createBoard();
         } else {
-            updateStatus(data.message, "var(--danger)");
+            document.getElementById('msg').innerText = data.message;
         }
     }
 
-    function createGrid() {
-        const grid = document.getElementById('grid');
-        grid.innerHTML = '';
+    function createBoard() {
+        const board = document.getElementById('board');
+        board.innerHTML = '';
         for (let i = 0; i < 25; i++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
-            cell.id = `cell-${i}`;
-            cell.innerHTML = '❓'; // শুরুতে কোশ্চেন মার্ক যাতে মানুষ বুঝে টাচ করতে হবে
-            cell.onclick = () => makeMove(i, cell);
-            grid.appendChild(cell);
+            cell.innerHTML = '❓'; 
+            cell.onclick = () => move(i, cell);
+            board.appendChild(cell);
         }
     }
 
-    async function makeMove(idx, el) {
-        if(isGameOver || el.classList.contains('revealed')) return;
+    async function move(idx, el) {
+        if (isEnded || el.classList.contains('revealed')) return;
 
         const res = await fetch('/api/game', {
             method: 'POST',
@@ -196,43 +133,34 @@
         });
 
         const data = await res.json();
-        if(data.status === 'boom') {
-            isGameOver = true;
+        if (data.status === 'boom') {
+            isEnded = true;
             el.classList.add('bomb');
-            el.innerHTML = '💥';
-            updateStatus(data.msg, "var(--danger)");
-            setTimeout(() => window.location.href = 'home.html', 3000);
+            el.innerHTML = '💣';
+            document.getElementById('msg').innerText = data.msg;
+            setTimeout(() => window.location.href = 'home.html', 2500);
         } else {
             el.classList.add('revealed');
             el.innerHTML = '💎';
-            document.getElementById('winDisplay').innerText = data.currentWin;
-            document.getElementById('cashoutBtn').style.display = 'block';
-            if(data.status === 'winAll') cashOut();
+            document.getElementById('winTxt').innerText = data.currentWin;
+            document.getElementById('coBtn').style.display = 'block';
+            if (data.status === 'winAll') cashOut();
         }
     }
 
     async function cashOut() {
-        if(isGameOver) return;
-        isGameOver = true;
-        updateStatus("ব্যালেন্স আপডেট হচ্ছে...", "var(--warning)");
-        
+        if (isEnded) return;
+        isEnded = true;
         const res = await fetch('/api/game', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'finish', gameId: user.gameId })
         });
-
         const data = await res.json();
-        if(res.ok) {
-            updateStatus(data.msg, "var(--success)");
+        if (res.ok) {
+            document.getElementById('msg').innerText = data.msg;
             setTimeout(() => window.location.href = 'home.html', 2000);
         }
-    }
-
-    function updateStatus(msg, color) {
-        const s = document.getElementById('statusMsg');
-        s.innerText = msg;
-        s.style.color = color;
     }
 </script>
 
