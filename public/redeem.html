@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redeem Coin - Elite Nexus</title>
+    <style>
+        body { background-color: #0d1117; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #161b22; padding: 30px; border-radius: 15px; border: 1px solid #30363d; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #58a6ff; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; text-align: center; font-size: 18px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #238636; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:disabled { background: #163620; cursor: not-allowed; }
+        .back-link { display: block; margin-top: 15px; color: #8b949e; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="mainContent" style="display: none;">
+        <h2>🎁 Redeem Code</h2>
+        <p style="color: #8b949e; font-size: 14px;">আপনার গোপন কোডটি এখানে দিন</p>
+        <input type="text" id="promoCode" placeholder="Enter Code Here">
+        <button id="redeemBtn" onclick="handleRedeem()">REDEEM NOW</button>
+        <a href="home.html" class="back-link">← Back to Home</a>
+    </div>
+
+    <script>
+        // সেশন থেকে ইউজার চেক করা
+        const userData = JSON.parse(sessionStorage.getItem('user'));
+
+        if (!userData || !userData.gameId) {
+            alert("অনুগ্রহ করে আগে লগইন করুন!");
+            window.location.href = 'index.html'; 
+        } else {
+            document.getElementById('mainContent').style.display = 'block';
+        }
+
+        async function handleRedeem() {
+            const code = document.getElementById('promoCode').value.trim();
+            const btn = document.getElementById('redeemBtn');
+
+            if (!code) return alert("কোড ইনপুট দিন!");
+
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                const response = await fetch('/api/redeem', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        gameId: userData.gameId, 
+                        promoCode: code 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message);
+                    window.location.href = 'home.html';
+                } else {
+                    alert(result.message);
+                    btn.disabled = false;
+                    btn.innerText = "REDEEM NOW";
+                }
+            } catch (error) {
+                alert("সার্ভার কানেকশন এরর!");
+                btn.disabled = false;
+                btn.innerText = "REDEEM NOW";
+            }
+        }
+    </script>
+</body>
+  </html>
+  
