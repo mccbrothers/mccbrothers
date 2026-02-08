@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zfox_fc Home (Guest Mode)</title>
+    <title> Zfox_fc Home (Guest Mode)</title>
     <style>
+        /* তোমার home.html থেকে হুবহু কপি করা ডিজাইন */
         body { background-color: #0d1117; color: white; margin: 0; padding-bottom: 80px; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         
-        /* 🔥 স্টোর বাটন এনিমেশন (Pixel to Pixel from home.html) */
+        /* 🔥 স্টোর বাটন এনিমেশন */
         .fire-wrapper { position: relative; width: 60px; height: 60px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
         .flame {
             position: absolute; bottom: 15px; width: 35px; height: 35px;
@@ -17,6 +18,7 @@
             box-shadow: 0 0 15px #ff4500; z-index: 1;
         }
         @keyframes burn { 0% { transform: rotate(-45deg) scale(1); opacity: 0.8; } 100% { transform: rotate(-45deg) scale(1.2); opacity: 1; } }
+        
         .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 4px 8px; text-align: center; }
 
         .balance-container { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
@@ -26,37 +28,41 @@
         }
         .diamond-border { border-color: #58a6ff; box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
         .gold-border { border-color: #ffcc00; box-shadow: 0 0 8px rgba(255, 204, 0, 0.2); cursor: default; }
+        
+        .add-btn { background: #58a6ff; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: bold; color: white; font-size: 12px; }
 
-        /* কার্ড ডিজাইন */
+        .banner-slider { width: 100%; height: 180px; overflow: hidden; position: relative; margin-top: 15px; border-radius: 15px; border: 1px solid #30363d; }
+        .banner-track { display: flex; transition: transform 0.5s ease-in-out; }
+        .banner-track img { width: 100%; height: 180px; flex-shrink: 0; object-fit: cover; }
+
         .match-card { background: #161b22; border-radius: 15px; border: 1px solid #30363d; margin-bottom: 20px; overflow: hidden; position: relative; }
         .match-banner { width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid #30363d; }
         .card-content { padding: 15px; }
-        
-        /* ডেইলি বোনাস মডাল */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-card { background: #161b22; width: 85%; max-width: 350px; border-radius: 20px; border: 1px solid #ffcc00; padding: 30px; text-align: center; box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popUp { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .claim-btn { background: linear-gradient(45deg, #ffcc00, #ff4500); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; width: 100%; margin-top: 20px; cursor: pointer; }
+        .timer-badge { position: absolute; top: 10px; right: 10px; font-size: 11px; background: rgba(0, 0, 0, 0.7); color: #ffcc00; padding: 4px 8px; border-radius: 5px; border: 1px solid #ffcc00; font-weight: bold; z-index: 10; }
 
-        /* বটম নেভিগেশন */
+        /* ডেইলি বোনাস মডাল */
+        #rewardModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-card { background: #161b22; width: 85%; max-width: 350px; border-radius: 20px; border: 1px solid #58a6ff; padding: 25px; text-align: center; animation: pop 0.3s ease; }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .claim-btn { background: linear-gradient(45deg, #ffcc00, #ff4500); color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; margin-top: 20px; cursor: pointer; }
+
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
-        .nav-btn { background:none; border:none; color:gray; text-decoration: none; display: flex; flex-direction: column; align-items: center; font-size: 11px; gap: 4px; }
-        .nav-btn.active { color:#58a6ff; }
-        svg { width: 22px; height: 22px; }
+        .nav-btn { background:none; border:none; color:gray; cursor:pointer; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-btn.active { color:#58a6ff; font-weight:bold; }
     </style>
 </head>
 <body>
 
-    <div id="dailyModal" class="modal-overlay">
+    <div id="rewardModal">
         <div class="modal-card">
             <div style="font-size: 50px;">🎁</div>
-            <h2 style="color: #ffcc00; margin: 10px 0;">Daily Reward!</h2>
-            <p style="color: #abb2bf; font-size: 14px;">গেস্ট হিসেবে আজ আপনি পেয়েছেন:</p>
-            <div style="background: #0d1117; padding: 15px; border-radius: 12px; margin: 15px 0; border: 1px dashed #58a6ff;">
-                <div style="color: #fff; font-size: 16px; margin-bottom: 5px;">💎 100 Diamonds</div>
-                <div style="color: #ffcc00; font-size: 16px;">🪙 200 IQ Gold</div>
+            <h2 style="color: #ffcc00;">Daily Gift!</h2>
+            <p style="color: #abb2bf;">গেস্ট ইউজার হিসেবে আজ আপনি পাচ্ছেন:</p>
+            <div style="background: #0d1117; padding: 15px; border-radius: 12px; border: 1px dashed #58a6ff;">
+                <div style="color: #fff; font-size: 18px;">💎 100 Diamonds</div>
+                <div style="color: #ffcc00; font-size: 18px;">🪙 200 IQ Gold</div>
             </div>
-            <button class="claim-btn" onclick="claimDaily()">CLAIM NOW</button>
+            <button class="claim-btn" onclick="claimReward()">Claim Now</button>
         </div>
     </div>
 
@@ -64,126 +70,116 @@
         <div class="fire-wrapper" onclick="location.href='storeg.html'">
             <div class="flame"></div>
             <div class="store-btn-box">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#ffcc00" stroke-width="2.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffcc00" stroke-width="2.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
                 <div style="font-size: 8px; color: #ffcc00; font-weight: bold;">STORE</div>
             </div>
         </div>
-
-        <h3 style="color: #58a6ff; letter-spacing: 1.5px; margin: 0; font-weight: 800; font-size: 16px;">ZFOX_FC GUEST</h3>
-        
+        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">Zfox_fc Guest</h3>
         <div class="balance-container">
             <div class="premium-box diamond-border">
-                 <span style="font-size: 13px; font-weight: bold; color: white;">💎 <span id="gCoins">0</span></span>
+                 <span style="font-size: 13px; font-weight: bold; color: white;">💎 <span id="uCoins">0</span></span>
+                 <a href="add-moneyg.html" class="add-btn">+</a>
             </div>
             <div class="premium-box gold-border">
-                 <span style="font-size: 13px; font-weight: bold; color: #ffcc00;">🪙 <span id="gIQ">0</span></span>
+                 <span style="font-size: 13px; font-weight: bold; color: #ffcc00;">🪙 <span id="uIQ">0</span></span>
             </div>
         </div>
     </div>
 
-    <div style="padding: 15px;">
-        <h2 style="font-size: 18px; border-left: 4px solid #58a6ff; padding-left: 10px; margin-bottom: 20px;">Available Matches</h2>
-        <div id="matchContainer">
-            <p style="text-align: center; color: gray;">Loading matches...</p>
+    <div style="padding: 0 15px;">
+        <div class="banner-slider">
+            <div class="banner-track" id="bannerTrack">
+                <img src="https://placehold.co/600x200/161b22/58a6ff?text=Welcome+Guest" alt="Banner 1">
+            </div>
         </div>
+
+        <h2 style="font-size: 18px; border-left: 4px solid #58a6ff; padding-left: 10px; margin: 20px 0;">Available Packages</h2>
+        <div id="pkgList"></div>
     </div>
 
     <div class="bottom-nav">
-        <a href="inboxg.html" class="nav-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            <span>Inbox</span>
-        </a>
-        <a href="g.html" class="nav-btn active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <span>Home</span>
-        </a>
-        <a href="accountg.html" class="nav-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>Account</span>
-        </a>
+        <a href="inboxg.html" class="nav-btn">📧<span>Inbox</span></a>
+        <a href="g.html" class="nav-btn active">🏠<span>Home</span></a>
+        <a href="accountg.html" class="nav-btn">👤<span>Account</span></a>
     </div>
 
     <script>
-        // Guest Data Engine
-        let gData = JSON.parse(localStorage.getItem('guest_db')) || {
-            coins: 0, iq: 0, lastDate: '', inbox: []
-        };
+        // --- লোকাল স্টোরেজ ইঞ্জিন ---
+        let guest = JSON.parse(localStorage.getItem('g_data')) || { coins: 0, iq: 0, last: '', inbox: [] };
 
         function updateBal() {
-            document.getElementById('gCoins').innerText = gData.coins;
-            document.getElementById('gIQ').innerText = gData.iq;
+            document.getElementById('uCoins').innerText = guest.coins;
+            document.getElementById('uIQ').innerText = guest.iq;
         }
 
         window.onload = () => {
             const today = new Date().toDateString();
-            if (gData.lastDate !== today) {
-                document.getElementById('dailyModal').style.display = 'flex';
+            if (guest.last !== today) {
+                document.getElementById('rewardModal').style.display = 'flex';
             }
             updateBal();
-            loadPackages();
+            loadPkgs();
         };
 
-        function claimDaily() {
-            gData.coins += 100;
-            gData.iq += 200;
-            gData.lastDate = new Date().toDateString();
-            pushMsg("System Bonus", "আপনি ১০০ 💎 এবং ২০০ 🪙 ডেইলি বোনাস ক্লেইম করেছেন!");
-            saveDB();
-            document.getElementById('dailyModal').style.display = 'none';
+        function claimReward() {
+            guest.coins += 100;
+            guest.iq += 200;
+            guest.last = new Date().toDateString();
+            guest.inbox.unshift({ t: "System", m: "আপনি ১০০ হীরা এবং ২০০ আইকিউ সোনা পেয়েছেন!", d: new Date().toLocaleString() });
+            save();
+            document.getElementById('rewardModal').style.display = 'none';
             updateBal();
         }
 
-        async function loadPackages() {
+        async function loadPkgs() {
             try {
                 const res = await fetch('/api/get-packages');
                 const data = await res.json();
-                const container = document.getElementById('matchContainer');
-                container.innerHTML = "";
+                const list = document.getElementById('pkgList');
+                list.innerHTML = "";
 
-                data.packages.forEach(pkg => {
+                data.packages.forEach((pkg, idx) => {
                     const isGame = pkg.Title.toLowerCase().includes("ludo") || pkg.Title.toLowerCase().includes("game");
-                    const func = isGame ? `goGame('${pkg.Title}')` : `goLogin()`;
-                    const label = isGame ? "PLAY NOW" : "JOIN NOW";
-                    const style = isGame ? "background: linear-gradient(45deg, #238636, #2ea043);" : "background: #30363d;";
+                    const btnLabel = isGame ? "PLAY NOW" : "JOIN NOW";
+                    const btnFunc = isGame ? `goGame('${pkg.Title}')` : `goLogin()`;
+                    const btnBg = isGame ? "linear-gradient(45deg, #238636, #2ea043)" : "#30363d";
 
-                    container.innerHTML += `
+                    list.innerHTML += `
                         <div class="match-card">
+                            <div class="timer-badge">${pkg.Time || 'Daily'}</div>
                             <img src="${pkg.img || 'https://placehold.co/600x300/161b22/58a6ff?text=Match'}" class="match-banner">
                             <div class="card-content">
-                                <h3 style="margin: 0; color: #58a6ff; font-size: 16px;">${pkg.Title}</h3>
+                                <h3 style="margin: 0; color: #58a6ff;">${pkg.Title}</h3>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                    <div style="font-weight:bold; color: #fff;">Entry: ${pkg.Fee} 💎</div>
-                                    <button onclick="${func}" style="${style} color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer; font-size: 12px;">${label}</button>
+                                    <div style="font-weight:bold;">Entry: ${pkg.Fee} 💎</div>
+                                    <button onclick="${btnFunc}" style="background:${btnBg}; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">${btnLabel}</button>
                                 </div>
                             </div>
                         </div>`;
                 });
-            } catch (e) { console.error("Fetch error"); }
+            } catch(e) { console.error("Error loading"); }
         }
 
-        function goLogin() {
-            alert("🔒 টুর্নামেন্টে জয়েন করতে দয়া করে আসল একাউন্টে লগইন করুন। গেস্ট মোডে শুধু গেম খেলা যায়।");
-        }
+        function goLogin() { alert("🔒 এটি টুর্নামেন্ট! জয়েন করতে আসল একাউন্টে লগইন করুন।"); }
 
         function goGame(name) {
-            pushMsg("Game Success", `${name} গেমে আপনি সফলভাবে জয়েন করেছেন।`);
-            saveDB();
-            alert("Join Successful! ✅ Redirecting...");
+            guest.inbox.unshift({ t: "Game Join", m: `${name} গেমে আপনি সফলভাবে জয়েন করেছেন।`, d: new Date().toLocaleString() });
+            save();
+            alert("Success! Redirecting to game... ✅");
             window.location.href = "gameg.html";
         }
 
-        function pushMsg(title, desc) {
-            gData.inbox.unshift({
-                t: title,
-                d: desc,
-                time: new Date().toLocaleString()
-            });
-        }
+        function save() { localStorage.setItem('g_data', JSON.stringify(guest)); }
 
-        function saveDB() {
-            localStorage.setItem('guest_db', JSON.stringify(gData));
-        }
+        // ব্যানার স্লাইডার এনিমেশন (home.html এর মতো)
+        let slideIdx = 0;
+        setInterval(() => {
+            const track = document.getElementById('bannerTrack');
+            if(track) {
+                slideIdx = (slideIdx + 1) % track.children.length;
+                track.style.transform = `translateX(-${slideIdx * 100}%)`;
+            }
+        }, 3000);
     </script>
 </body>
-                                                                                                         </html>
-            
+</html>
