@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zfox_fc LocalStorage Admin</title>
+    <style>
+        body { background-color: #0d1117; color: white; font-family: sans-serif; padding: 20px; }
+        .card { background: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; background: #0d1117; color: #58a6ff; border: 1px solid #30363d; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #238636; color: white; }
+        .btn-delete { background: #da3633; color: white; }
+        .btn-refresh { background: #21262d; color: #58a6ff; border: 1px solid #30363d; }
+        pre { background: #0d1117; padding: 10px; border-radius: 5px; color: #ff7b72; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <h2>🛠 LocalStorage Manager</h2>
+    <p style="font-size: 12px; color: gray;">এই পেজ দিয়ে আপনি ডাটা এডিট বা ডিলিট করতে পারবেন।</p>
+
+    <div class="card">
+        <h3>1. Current Data (Raw JSON)</h3>
+        <pre id="rawViewer"></pre>
+        <button class="btn-refresh" onclick="loadData()">Refresh Data</button>
+    </div>
+
+    <div class="card">
+        <h3>2. Edit 'user' Object</h3>
+        <label>কয়েন এডিট করুন:</label>
+        <input type="number" id="editCoins" placeholder="New Coins Amount">
+        
+        <label>IQ ব্যালেন্স এডিট করুন:</label>
+        <input type="number" id="editIQ" placeholder="New IQ Amount">
+
+        <button class="btn-save" onclick="saveUser()">Update User Data</button>
+    </div>
+
+    <div class="card">
+        <h3>3. Danger Zone</h3>
+        <button class="btn-delete" onclick="clearAll()">Clear All LocalStorage (Reset)</button>
+    </div>
+
+    <script>
+        function loadData() {
+            const userData = localStorage.getItem('user');
+            const raw = document.getElementById('rawViewer');
+            
+            if (userData) {
+                const parsed = JSON.parse(userData);
+                raw.innerText = JSON.stringify(parsed, null, 4);
+                
+                // ইনপুট ফিল্ডে বর্তমান ডাটা বসানো
+                document.getElementById('editCoins').value = parsed.coins || 0;
+                document.getElementById('editIQ').value = parsed.iq_balance || 0;
+            } else {
+                raw.innerText = "No 'user' data found!";
+            }
+        }
+
+        function saveUser() {
+            let userData = JSON.parse(localStorage.getItem('user')) || {};
+            
+            // নতুন ভ্যালু সেট করা
+            userData.coins = parseInt(document.getElementById('editCoins').value);
+            userData.iq_balance = parseInt(document.getElementById('editIQ').value);
+
+            localStorage.setItem('user', JSON.stringify(userData));
+            alert("Data Updated! ✅");
+            loadData();
+        }
+
+        function clearAll() {
+            if (confirm("আপনি কি নিশ্চিত? সব ডাটা (কয়েন, আইডি) মুছে যাবে!")) {
+                localStorage.clear();
+                alert("All Cleared! 🗑️");
+                loadData();
+            }
+        }
+
+        // পেজ লোড হলে ডাটা দেখাবে
+        window.onload = loadData;
+    </script>
+</body>
+</html>
