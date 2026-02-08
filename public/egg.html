@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Egg - Golden Shine</title>
+    <style>
+        :root { --primary: #ffcc00; --danger: #ff4d4d; --success: #00ff88; --bg: #010409; --card: #0d1117; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding-top: 20px; }
+        
+        .game-container { max-width: 380px; margin: 0 auto; background: var(--card); padding: 25px; border-radius: 28px; border: 1px solid #30363d; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        
+        .balance-bar { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 25px; font-weight: bold; color: #f1e05a; background: #161b22; padding: 10px 25px; border-radius: 50px; border: 1px solid #30363d; font-size: 22px; }
+
+        #message { height: 30px; margin-bottom: 20px; font-weight: 600; font-size: 18px; transition: 0.3s; }
+
+        .egg-stage { display: flex; justify-content: space-between; align-items: flex-end; height: 160px; margin: 20px 0; padding: 0 10px; }
+
+        .egg-wrapper { cursor: pointer; transition: transform 0.2s; position: relative; flex: 1; display: flex; justify-content: center; }
+
+        /* সাধারণ ডিমের ডিজাইন */
+        .egg { 
+            width: 85px; height: 110px; background: radial-gradient(circle at 30% 30%, #ffffff, #d1d9e0); 
+            border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%; 
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden; /* শাইন ইফেক্ট ডিমের ভেতরে রাখার জন্য */
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: 0.4s;
+        }
+        
+        /* হারলে ডিমের অবস্থা */
+        .egg.cracked { transform: translateY(10px); opacity: 0.3; filter: grayscale(1); }
+        
+        /* বিজয়ী ডিমের স্বর্ণালী লুক (সাইজ পরিবর্তন হবে না) */
+        .egg.winner { 
+            background: radial-gradient(circle at 30% 30%, #ffd700, #ffcc00, #b8860b); 
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.5), inset -2px -2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* স্বর্ণের ঝিলিক এনিমেশন (Shine Effect) */
+        .egg.winner::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0) 30%, 
+                rgba(255, 255, 255, 0.8) 50%, 
+                rgba(255, 255, 255, 0) 70%, 
+                transparent 100%);
+            transform: rotate(30deg);
+            animation: shine 1.5s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -150%; }
+            100% { left: 150%; }
+        }
+
+        .controls { margin-top: 30px; }
+        .btn-start { 
+            width: 100%; padding: 18px; font-size: 20px; font-weight: 800; border-radius: 20px; border: none; 
+            cursor: pointer; background: var(--success); color: #0d1117; text-transform: uppercase;
+            box-shadow: 0 6px 0 #1a6328; transition: 0.1s;
+        }
+        .btn-start:disabled { background: #30363d; color: #8b949e; box-shadow: none; transform: translateY(4px); cursor: not-allowed; }
+        .btn-start:active:not(:disabled) { transform: translateY(4px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="balance-bar">
+        💎 <span id="coins">0</span>
+    </div>
+
+    <div id="message">রেডি? খেলা শুরু করুন!</div>
+
+    <div class="egg-stage">
+        <div class="egg-wrapper" onclick="chooseEgg(0)"><div class="egg" id="egg-0"></div></div>
+        <div class="egg-wrapper" onclick="chooseEgg(1)"><div class="egg" id="egg-1"></div></div>
+        <div class="egg-wrapper" onclick="chooseEgg(2)"><div class="egg" id="egg-2"></div></div>
+    </div>
+
+    <div class="controls">
+        <button id="startBtn" class="btn-start" onclick="initGame()">খেলা শুরু (১০ টাকা)</button>
+    </div>
+</div>
+
+<script>
+    // LocalStorage Data (রকেট গেমের সাথে সিঙ্ক করা)
+    let localUser = JSON.parse(localStorage.getItem('user')) || { coins: 500, iq_balance: 0, messages: [] };
+    let gameActive = false;
+
+    function refreshUI() {
+        document.getElementById('coins').innerText = localUser.coins;
+    }
+
+    function initGame() {
+        if (localUser.coins < 10) return alert("কয়েন নেই!");
+
+        localUser.coins -= 10;
+        saveData();
+        refreshUI();
+
+        gameActive = true;
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('message').innerText = "যেকোনো একটি ডিম বেছে নিন";
+        document.getElementById('message').style.color = "white";
+
+        for(let i=0; i<3; i++) {
+            const e = document.getElementById(`egg-${i}`);
+            e.className = "egg";
+        }
+    }
+
+    function chooseEgg(index) {
+        if (!gameActive) return;
+        gameActive = false;
+
+        const msg = document.getElementById('message');
+        const selectedEgg = document.getElementById(`egg-${index}`);
+
+        // জেতার সম্ভাবনা (Demo: 50%)
+        let winChance = 50; 
+        let isWinningTurn = (Math.random() * 100) <= winChance;
+
+        if (isWinningTurn) {
+            // ইউজার জিতলে পছন্দের ডিমটি সোনার হবে
+            selectedEgg.classList.add('winner');
+            msg.innerText = "দারুণ! আপনি ৩০ টাকা জিতেছেন! 🎉";
+            msg.style.color = "var(--success)";
+            localUser.coins += 30;
+            saveMessage("ডিম জয়: ১০ খরচ করে ৩০ জয়।");
+        } else {
+            // হারলে নিজেরটি ভেঙে যাবে এবং অন্যটি সোনা হবে
+            selectedEgg.classList.add('cracked');
+            
+            let otherIndices = [0, 1, 2].filter(i => i !== index);
+            let showWinnerIndex = otherIndices[Math.floor(Math.random() * otherIndices.length)];
+            document.getElementById(`egg-${showWinnerIndex}`).classList.add('winner');
+
+            msg.innerText = "ইশ! অল্পের জন্য মিস হলো।";
+            msg.style.color = "var(--danger)";
+            saveMessage("ডিম লস: ভুল ডিম চয়েজ।");
+        }
+
+        saveData();
+        refreshUI();
+
+        setTimeout(() => {
+            document.getElementById('startBtn').disabled = false;
+        }, 1500);
+    }
+
+    function saveData() { localStorage.setItem('user', JSON.stringify(localUser)); }
+
+    function saveMessage(text) {
+        if(!localUser.messages) localUser.messages = [];
+        localUser.messages.unshift({ title: "Lucky Egg", body: text, time: new Date().toLocaleTimeString(), isRead: false });
+        saveData();
+    }
+
+    refreshUI();
+</script>
+
+</body>
+  </html>
+  
