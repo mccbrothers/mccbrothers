@@ -196,11 +196,13 @@ const data = { packages: packages, coins: user.coins, joinedPackages: user.joine
                 const isFull = joined >= total;
                 const timerId = `timer-${index}`;
                 const matchImg = pkg.img || "https://placehold.co/600x300/161b22/58a6ff?text=No+Image";
-                const isGame = pkg.Type === "Game";
-                
-                const actionButton = isGame 
-                    ? `<button onclick="window.location.href='gameg.html'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`
-                    : (isJoined ? `<span class="applied-tag">Applied ✅</span>` : (isFull ? `<span class="full-tag">FULL 🚫</span>` : `<button onclick="openM('${pkg.Match_ID || pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">JOIN NOW</button>`));
+                // Game_Link কলামে কিছু লেখা থাকলে সেটাকে গেম হিসেবে ধরবে
+const isGame = pkg.Game_Link && pkg.Game_Link.trim() !== "";
+
+const actionButton = isGame 
+    ? `<button onclick="window.location.href='${pkg.Game_Link}'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`
+    : (isJoined ? `<span class="applied-tag">Applied ✅</span>` : (isFull ? `<span class="full-tag">FULL 🚫</span>` : `<button onclick="openM('${pkg.Match_ID || pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">JOIN NOW</button>`));
+    
 
                 list.innerHTML += `
                     <div class="match-card">
@@ -244,12 +246,14 @@ const data = { packages: packages, coins: user.coins, joinedPackages: user.joine
     const pkg = allPackages.find(p => (p.Match_ID === id || p.Title === id));
     if(!pkg) return;
 
-    // নতুন লজিক: গেম না হলে লগইন রিডাইরেক্ট
-    if (pkg.Type !== "Game") {
-        alert("এটি একটি টুর্নামেন্ট। জয়েন করতে লগইন পেজে যান।");
-        window.location.href = 'login.html'; // এখানে আপনার লগইন ফাইলের নাম দিন
-        return;
-    }
+   // যদি Game_Link না থাকে, তবেই সেটিকে টুর্নামেন্ট হিসেবে ধরবে এবং লগইনে পাঠাবে
+if (!pkg.Game_Link || pkg.Game_Link.trim() === "") {
+    alert("এটি একটি টুর্নামেন্ট। জয়েন করতে লগইন পেজে যান।");
+    window.location.href = 'login.html'; 
+    return;
+}
+
+    
 
     document.getElementById('mTitle').innerText = pkg.Title;
     document.getElementById('mMap').innerText = pkg.Map || "TBA";
@@ -365,4 +369,5 @@ setTimeout(checkRewards, 2000);
         
     </script>
 </body>
-</html>
+    </html>
+                                                                              
