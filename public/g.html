@@ -3,152 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zfox_fc Guest Home</title>
+    <title>Zfox_fc Home (Guest Mode)</title>
     <style>
-        /* আপনার home.html এর CSS হুবহু এখানে থাকবে */
+        /* home.html থেকে হুবহু কপি করা ডিজাইন */
         body { background-color: #0d1117; color: white; margin: 0; padding-bottom: 80px; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
-        .header { background: #161b22; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; position: sticky; top: 0; z-index: 100; }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .coin-box { background: #0d1117; padding: 5px 12px; border-radius: 20px; border: 1px solid #f1e05a; color: #f1e05a; font-weight: bold; font-size: 14px; }
-        .container { padding: 15px; }
-        .match-card { background: #161b22; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #30363d; }
-        .match-title { font-size: 18px; color: #58a6ff; font-weight: bold; margin-bottom: 5px; }
-        .match-details { font-size: 13px; color: #8b949e; margin-bottom: 10px; }
-        .join-btn { width: 100%; background: linear-gradient(90deg, #238636, #2ea043); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         
-        /* প্রোফাইল সেকশন */
-        .guest-profile { background: #1c2128; border-radius: 10px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #58a6ff; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .stat-item { background: #0d1117; padding: 10px; border-radius: 5px; text-align: center; font-size: 12px; color: #8b949e; }
-        .stat-val { display: block; font-size: 16px; color: white; font-weight: bold; }
+        .fire-wrapper { position: relative; width: 60px; height: 60px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+        .flame {
+            position: absolute; bottom: 15px; width: 35px; height: 35px;
+            background: radial-gradient(circle, #ffcc00 20%, #ff4500 60%, rgba(255, 69, 0, 0) 80%);
+            border-radius: 50% 50% 20% 50%; transform: rotate(-45deg);
+            filter: blur(2px); animation: burn 0.4s infinite alternate;
+            box-shadow: 0 0 15px #ff4500; z-index: 1;
+        }
+        @keyframes burn { 0% { transform: rotate(-45deg) scale(1); opacity: 0.8; } 100% { transform: rotate(-45deg) scale(1.2); opacity: 1; } }
+        .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 4px 8px; text-align: center; }
 
-        /* মডেল স্টাইল */
-        #detailsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: #161b22; width: 90%; max-width: 400px; padding: 20px; border-radius: 15px; text-align: center; }
+        .balance-container { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+        .premium-box {
+            background: #161b22; padding: 5px 12px; border-radius: 12px; border: 1px solid #30363d;
+            display: flex; align-items: center; gap: 8px; min-width: 100px; justify-content: space-between;
+        }
+        .diamond-border { border-color: #58a6ff; box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
+        .gold-border { border-color: #ffcc00; box-shadow: 0 0 8px rgba(255, 204, 0, 0.2); }
+        .add-btn { background: #58a6ff; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+
+        .match-card { background: #161b22; border-radius: 15px; border: 1px solid #30363d; margin-bottom: 20px; overflow: hidden; position: relative; }
+        .match-banner { width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid #30363d; }
+        .card-content { padding: 15px; }
+        .timer-badge { position: absolute; top: 10px; right: 10px; font-size: 11px; background: rgba(0, 0, 0, 0.7); color: #ffcc00; padding: 4px 8px; border-radius: 5px; border: 1px solid #ffcc00; font-weight: bold; z-index: 10; }
+        
+        #detailsModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-card { background: #161b22; width: 85%; max-width: 400px; border-radius: 20px; border: 1px solid #58a6ff; padding: 20px; animation: pop 0.3s ease; }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .detail-item { background: #0d1117; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #ff4500; font-size: 14px; }
+        .applied-tag { color: #238636; font-weight: bold; font-size: 13px; border: 1px solid #238636; padding: 8px 15px; border-radius: 8px; background: rgba(35, 134, 54, 0.1); }
+        .full-tag { color: #f85149; font-weight: bold; font-size: 14px; border: 1px solid #f85149; padding: 8px 15px; border-radius: 8px; }
+        
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
+        .nav-btn { background:none; border:none; color:gray; cursor:pointer; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-btn.active { color:#58a6ff; font-weight:bold; }
+
+        /* গেস্ট ব্যাজ ডিজাইন */
+        .guest-badge { background: #ff4500; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px; position: absolute; top: 5px; left: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="user-info">
-            <div style="font-weight: bold; color: #58a6ff;" id="displayGuestName">Guest...</div>
-        </div>
-        <div class="coin-box">🪙 <span id="displayGuestCoins">0</span></div>
-    </div>
+    <script>
+        let guestData = JSON.parse(localStorage.getItem('guest_user'));
+        const today = new Date().toDateString();
 
-    <div class="container">
-        <div class="guest-profile">
-            <div style="font-size: 14px; color: #8b949e;">Welcome, <span id="pName" style="color: white; font-weight: bold;">Guest</span></div>
-            <div style="font-size: 12px; color: #58a6ff; margin-bottom: 5px;" id="pID">ID: G-0000</div>
-            
-            <div class="stat-grid">
-                <div class="stat-item">Matches Played <span class="stat-val" id="pPlayed">0</span></div>
-                <div class="stat-item">Matches Won <span class="stat-val" id="pWon">0</span></div>
+        if (!guestData) {
+            // প্রথমবার ভিজিটে ৫০০০ কয়েন বোনাস
+            guestData = { 
+                name: "Guest", 
+                coins: 5000, 
+                iq_balance: 100, 
+                last_claim: today,
+                joinedMatches: [] 
+            };
+            localStorage.setItem('guest_user', JSON.stringify(guestData));
+            alert("Welcome! You received 5000 💎 Demo Coins.");
+        } else if (guestData.last_claim !== today) {
+            // প্রতিদিন ৫০০ কয়েন ফ্রি
+            guestData.coins += 500;
+            guestData.last_claim = today;
+            localStorage.setItem('guest_user', JSON.stringify(guestData));
+            alert("Daily Reward: 500 💎 Coins added to your guest account.");
+        }
+    </script>
+
+    <div style="padding: 10px 15px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-bottom: 1px solid #30363d; position: sticky; top:0; background:#0d1117; z-index:90;">
+        <div class="fire-wrapper" onclick="location.href='storeg.html'">
+            <div class="flame"></div>
+            <div class="store-btn-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffcc00" stroke-width="2.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <div style="font-size: 8px; color: #ffcc00; font-weight: bold;">STORE</div>
             </div>
         </div>
 
-        <h3 style="margin-bottom: 15px; color: #c9d1d9;">Available Matches</h3>
-        <div id="matchList">Loading packages...</div>
-    </div>
-
-    <div id="detailsModal">
-        <div class="modal-content">
-            <h2 id="mTitle" style="color: #58a6ff;"></h2>
-            <p id="mRules" style="font-size: 13px; color: #8b949e;"></p>
-            <button id="joinConfirmBtn" class="join-btn">PLAY NOW</button>
-            <button onclick="closeM()" style="background:transparent; border:none; color:gray; margin-top:15px; cursor:pointer;">Cancel</button>
+        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">Zfox_Fc (G) 🏆</h3>
+        
+        <div class="balance-container">
+            <div class="premium-box diamond-border">
+                 <span style="font-size: 13px; font-weight: bold; color: white;">💎 <span id="userCoins">0</span></span>
+                <a href="add-moneyg.html" class="add-btn">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+                </a>
+            </div>
+            <div class="premium-box gold-border" onclick="location.href='gameg.html'" style="cursor: pointer;">
+                 <span style="font-size: 13px; font-weight: bold; color: #ffcc00;">🪙 <span id="userIQ">0</span></span>
+                 <span style="font-size: 9px; color: gray; font-weight: bold;">IQ</span>
+            </div>
         </div>
     </div>
 
+    <div style="padding: 20px;">
+        <h2 style="font-size: 18px; border-left: 4px solid #58a6ff; padding-left: 10px; margin-bottom: 20px;">Demo Tournaments</h2>
+        <div id="tournamentList">
+            <p style="text-align: center; color: gray;">Loading Demo Matches...</p>
+        </div>
+    </div>
+
+    <div id="detailsModal">
+        <div class="modal-card">
+            <h2 id="mTitle" style="color: #58a6ff; margin-top: 0; font-size: 20px;"></h2>
+            <div class="detail-item">🗺️ <b>Map:</b> <span id="mMap"></span></div>
+            <div class="detail-item">⏰ <b>Time (BD):</b> <span id="mTime"></span></div>
+            <div class="detail-item">🏆 <b>Prize:</b> <span id="mPrize"></span></div>
+            <div class="detail-item">📜 <b>Rules:</b> <span id="mRules"></span></div>
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button onclick="closeM()" style="flex:1; padding:12px; background:#30363d; color:white; border:none; border-radius:10px; cursor:pointer;">Back</button>
+                <button id="joinConfirmBtn" style="flex:2; padding:12px; background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">Demo Join</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="inboxg.html" class="nav-btn"><span>📧</span><span>Inbox</span></a>
+        <a href="g.html" class="nav-btn active"><span>🏠</span><span>Home</span></a>
+        <a href="accountg.html" class="nav-btn"><span>👤</span><span>Account</span></a>
+    </div>
+    
     <script>
-        // ১. গেস্ট ডাটা ম্যানেজমেন্ট (LocalStorage)
-        function getGuestData() {
-            let data = localStorage.getItem('guest_user');
-            if (!data) {
-                // নতুন গেস্ট তৈরি
-                const randomId = Math.floor(1000 + Math.random() * 9000);
-                const newData = {
-                    name: "Guest_" + randomId,
-                    gameId: "G-" + randomId,
-                    coins: 100, // ডিফল্ট ১০০ কয়েন
-                    played: 0,
-                    won: 0,
-                    inbox: []
-                };
-                localStorage.setItem('guest_user', JSON.stringify(newData));
-                return newData;
-            }
-            return JSON.parse(data);
-        }
+        document.getElementById('userCoins').innerText = guestData.coins;
+        document.getElementById('userIQ').innerText = guestData.iq_balance;
 
-        const guest = getGuestData();
+        let allPackages = [];
+        let timers = [];
 
-        // UI আপডেট
-        function updateUI() {
-            document.getElementById('displayGuestName').innerText = guest.name;
-            document.getElementById('displayGuestCoins').innerText = guest.coins;
-            document.getElementById('pName').innerText = guest.name;
-            document.getElementById('pID').innerText = "ID: " + guest.gameId;
-            document.getElementById('pPlayed').innerText = guest.played;
-            document.getElementById('pWon').innerText = guest.won;
-        }
-
-        // ২. প্যাকেজ লোড করা (api/get-packages.js ব্যবহার করে)
-        async function fetchPackages() {
+        async function syncData() {
             try {
-                // এখানে আপনার এপিআই কল করা হচ্ছে
-                const res = await fetch('/api/get-packages');
+                // আসল API থেকেই প্যাকেজ লিস্ট আনা হবে
+                const res = await fetch(`/api/get-packages`);
                 const data = await res.json();
-                
-                if (data.packages) {
-                    renderMatches(data.packages);
-                }
-            } catch (err) {
-                document.getElementById('matchList').innerText = "Failed to load matches.";
-            }
+                allPackages = data.packages;
+                renderMatches(guestData.joinedMatches || []);
+            } catch (err) { console.error("Sync Error:", err); }
         }
 
-        function renderMatches(packages) {
-            const list = document.getElementById('matchList');
+        function renderMatches(joinedIds) {
+            const list = document.getElementById('tournamentList');
             list.innerHTML = "";
-            packages.forEach(pkg => {
-                const card = document.createElement('div');
-                card.className = 'match-card';
-                card.innerHTML = `
-                    <div class="match-title">${pkg.Title}</div>
-                    <div class="match-details">Entry Fee: 🪙 ${pkg.Fee} | Prize: 🪙 ${pkg.Prize}</div>
-                    <div style="font-size: 11px; color: #238636; margin-bottom: 10px;">Status: LIVE ✅</div>
-                    <button class="join-btn" onclick='showJoinModal(${JSON.stringify(pkg)})'>JOIN MATCH</button>
-                `;
-                list.appendChild(card);
+            timers.forEach(t => clearInterval(t));
+
+            allPackages.forEach((pkg, index) => {
+                if (pkg.Title.toLowerCase().includes("ludo")) return;
+                const isJoined = joinedIds.includes(pkg.Match_ID) || joinedIds.includes(pkg.Title);
+                const total = parseInt(pkg.Total_Slots) || 48;
+                const joined = isJoined ? (parseInt(pkg.Joined_Players) || 0) + 1 : (parseInt(pkg.Joined_Players) || 0);
+                const isFull = joined >= total;
+                const timerId = `timer-${index}`;
+                const matchImg = pkg.img || "https://placehold.co/600x300/161b22/58a6ff?text=Demo+Match";
+                
+                const actionButton = isJoined 
+                    ? `<span class="applied-tag">Applied ✅</span>` 
+                    : (isFull ? `<span class="full-tag">FULL 🚫</span>` : `<button onclick="openM('${pkg.Match_ID || pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">JOIN NOW</button>`);
+
+                list.innerHTML += `
+                    <div class="match-card">
+                        <div id="${timerId}" class="timer-badge">Loading...</div>
+                        <img src="${matchImg}" class="match-banner" alt="Game Image">
+                        <div class="card-content">
+                            <h3 style="margin: 0; color: #58a6ff;">${pkg.Title}</h3>
+                            <p style="font-size: 12px; color: gray; margin: 8px 0;">
+                                👥 Players: <span style="color:white; font-weight:bold;">${joined}/${total}</span>
+                            </p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                                <div style="font-weight:bold; color:#fff; font-size: 15px;">Fee: ${pkg.Fee} 💎</div>
+                                ${actionButton}
+                            </div>
+                        </div>
+                    </div>`;
+                if (pkg.Time) startTimer(pkg.Time, timerId);
             });
         }
 
-        // ৩. জয়েন লজিক
-        let selectedPkg = null;
-        function showJoinModal(pkg) {
-            selectedPkg = pkg;
+        function startTimer(targetTime, elementId) {
+            function update() {
+                const now = new Date();
+                const bdNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 6));
+                const diff = new Date(targetTime).getTime() - bdNow.getTime();
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                if (diff <= 0) { el.innerText = "Ongoing / Closed"; el.style.color = "#ff7b72"; return; }
+                const d = Math.floor(diff / 86400000);
+                const h = Math.floor((diff % 86400000) / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                el.innerText = `Starts in: ${d}d ${h}h ${m}m ${s}s`;
+            }
+            update();
+            const t = setInterval(update, 1000);
+            timers.push(t);
+        }
+
+        function openM(id) {
+            const pkg = allPackages.find(p => (p.Match_ID === id || p.Title === id));
+            if(!pkg) return;
             document.getElementById('mTitle').innerText = pkg.Title;
-            document.getElementById('mRules').innerText = pkg.Rules || "Play fair and win big!";
+            document.getElementById('mMap').innerText = pkg.Map || "TBA";
+            document.getElementById('mTime').innerText = pkg.Time || "TBA";
+            document.getElementById('mPrize').innerText = pkg.Prize_Pool || "Double Win";
+            document.getElementById('mRules').innerText = pkg.Rules || "Demo Rules: Play for fun!";
+            const joinBtn = document.getElementById('joinConfirmBtn');
+            joinBtn.onclick = () => processJoin(pkg);
             document.getElementById('detailsModal').style.display = 'flex';
         }
 
-        document.getElementById('joinConfirmBtn').onclick = function() {
-            if (guest.coins >= parseInt(selectedPkg.Fee)) {
-                // গেম পেজে পাঠিয়ে দেওয়া (gameg.html)
-                // সাথে প্যাকেজ ডাটা পাস করা
-                sessionStorage.setItem('currentMatch', JSON.stringify(selectedPkg));
-                window.location.href = 'gameg.html';
-            } else {
-                alert("আপনার পর্যাপ্ত কয়েন নেই! গেস্ট মোডে আপনি কয়েন হ্যাক করে বাড়িয়ে নিতে পারেন (LocalStorage edit)।");
+        function processJoin(pkg) {
+            const fee = parseInt(pkg.Fee);
+            if (guestData.coins < fee) {
+                alert("Insufficient Demo Balance!");
+                return;
             }
-        };
+
+            // লোকাল স্টোরেজ থেকে কয়েন কাটা এবং জয়েনিং আপডেট
+            guestData.coins -= fee;
+            guestData.joinedMatches.push(pkg.Match_ID || pkg.Title);
+            localStorage.setItem('guest_user', JSON.stringify(guestData));
+
+            alert("Demo Join Successful! ✅");
+            window.location.reload();
+        }
 
         function closeM() { document.getElementById('detailsModal').style.display = 'none'; }
 
-        // পেজ লোড হলে রান হবে
-        updateUI();
-        fetchPackages();
+        syncData();
+        setInterval(syncData, 30000); // ৩০ সেকেন্ড পর পর রিফ্রেশ
     </script>
 </body>
-</html>
+    </html>
+    
