@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Zfox_fc Home (Guest Mode)</title>
+    <title> Zfox_fc Guest Home</title>
     <style>
-        /* তোমার অরিজিনাল home.html এর প্রতিটি সিএসএস লাইন এখানে আছে */
+        /* CSS হুবহু home.html থেকে নেওয়া */
         body { background-color: #0d1117; color: white; margin: 0; padding-bottom: 80px; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         
         .fire-wrapper { position: relative; width: 60px; height: 60px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
@@ -37,12 +37,39 @@
         .modal-card { background: #161b22; width: 85%; max-width: 400px; border-radius: 20px; border: 1px solid #58a6ff; padding: 20px; animation: pop 0.3s ease; }
         @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
+        .detail-item { background: #0d1117; padding: 10px; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #ff4500; font-size: 14px; }
+        .applied-tag { color: #238636; font-weight: bold; font-size: 13px; border: 1px solid #238636; padding: 8px 15px; border-radius: 8px; background: rgba(35, 134, 54, 0.1); }
+        .full-tag { color: #f85149; font-weight: bold; font-size: 14px; border: 1px solid #f85149; padding: 8px 15px; border-radius: 8px; }
+        
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
         .nav-btn { background:none; border:none; color:gray; cursor:pointer; font-size: 14px; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-btn.active { color:#58a6ff; font-weight:bold; }
     </style>
 </head>
 <body>
+
+    <script>
+        // --- গেস্ট ইউজার লজিক (LocalStorage) ---
+        let guestData = JSON.parse(localStorage.getItem('guest_user'));
+        const today = new Date().toDateString();
+
+        if (!guestData) {
+            // প্রথমবার ভিজিটে ৫০০০ ডায়মন্ড এবং ৫০০ গোল্ড (IQ) ওয়েলকাম বোনাস
+            guestData = {
+                coins: 5000,
+                iq_balance: 500,
+                last_claim: today,
+                joinedMatches: []
+            };
+        } else if (guestData.last_claim !== today) {
+            // প্রতিদিনের রিওয়ার্ড: ৫০০ ডায়মন্ড + ১০০ গোল্ড
+            guestData.coins += 500;
+            guestData.iq_balance += 100;
+            guestData.last_claim = today;
+            alert("Daily Reward Added: 💎 500 & 🪙 100 IQ");
+        }
+        localStorage.setItem('guest_user', JSON.stringify(guestData));
+    </script>
 
     <div style="padding: 10px 15px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; border-bottom: 1px solid #30363d; position: sticky; top:0; background:#0d1117; z-index:90;">
         <div class="fire-wrapper" onclick="location.href='storeg.html'">
@@ -53,24 +80,40 @@
             </div>
         </div>
 
-        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">ZFOX_FC GUEST</h3>
+        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">Zfox_Fc (Guest)</h3>
         
         <div class="balance-container">
             <div class="premium-box diamond-border">
-                 <span style="font-size: 13px; font-weight: bold; color: white;">💎 <span id="gCoins">0</span></span>
-                 <a href="#" class="add-btn"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="white" stroke-width="3" stroke-linecap="round"/></svg></a>
+                 <span style="font-size: 13px; font-weight: bold; color: white;">💎 <span id="userCoins">0</span></span>
+                <a href="add-moneyg.html" class="add-btn">
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+                </a>
             </div>
-            <div class="premium-box gold-border">
-                 <span style="font-size: 13px; font-weight: bold; color: #ffcc00;">🪙 <span id="gIQ">0</span></span>
+            <div class="premium-box gold-border" onclick="location.href='gameg.html'" style="cursor: pointer;">
+                 <span style="font-size: 13px; font-weight: bold; color: #ffcc00;">🪙 <span id="userIQ">0</span></span>
                  <span style="font-size: 9px; color: gray; font-weight: bold;">IQ</span>
             </div>
         </div>
     </div>
 
     <div style="padding: 20px;">
-        <h2 style="font-size: 18px; border-left: 4px solid #58a6ff; padding-left: 10px; margin-bottom: 20px;">Live Tournaments & Games</h2>
+        <h2 style="font-size: 18px; border-left: 4px solid #58a6ff; padding-left: 10px; margin-bottom: 20px;">Live Tournaments</h2>
         <div id="tournamentList">
             <p style="text-align: center; color: gray;">Loading Matches...</p>
+        </div>
+    </div>
+
+    <div id="detailsModal">
+        <div class="modal-card">
+            <h2 id="mTitle" style="color: #58a6ff; margin-top: 0; font-size: 20px;"></h2>
+            <div class="detail-item">🗺️ <b>Map:</b> <span id="mMap"></span></div>
+            <div class="detail-item">⏰ <b>Time (BD):</b> <span id="mTime"></span></div>
+            <div class="detail-item">🏆 <b>Prize:</b> <span id="mPrize"></span></div>
+            <div class="detail-item">📜 <b>Rules:</b> <span id="mRules"></span></div>
+            <div style="margin-top: 25px; display: flex; gap: 10px;">
+                <button onclick="closeM()" style="flex:1; padding:12px; background:#30363d; color:white; border:none; border-radius:10px; cursor:pointer;">Back</button>
+                <button id="joinConfirmBtn" style="flex:2; padding:12px; background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">Confirm Join</button>
+            </div>
         </div>
     </div>
 
@@ -79,70 +122,114 @@
         <a href="g.html" class="nav-btn active"><span>🏠</span><span>Home</span></a>
         <a href="accountg.html" class="nav-btn"><span>👤</span><span>Account</span></a>
     </div>
-
+    
     <script>
-        // গেস্ট সিস্টেম ডাটাবেস
-        let gSystem = JSON.parse(localStorage.getItem('g_sys')) || { coins: 0, iq: 0, last: '', inbox: [] };
+        document.getElementById('userCoins').innerText = guestData.coins;
+        document.getElementById('userIQ').innerText = guestData.iq_balance;
 
-        function updateUI() {
-            document.getElementById('gCoins').innerText = gSystem.coins;
-            document.getElementById('gIQ').innerText = gSystem.iq;
-        }
+        let allPackages = [];
+        let timers = [];
 
-        // তোমার অরিজিনাল ডাটা ফেচিং লজিক
         async function syncData() {
             try {
+                // আসল টুর্নামেন্ট ডাটা ফেচ করা হচ্ছে যাতে লিস্ট একই থাকে
                 const res = await fetch(`/api/get-packages`);
                 const data = await res.json();
-                renderMatches(data.packages);
-            } catch (err) { console.error("Sync Error"); }
+                allPackages = data.packages;
+                renderMatches(guestData.joinedMatches);
+            } catch (err) { console.error("Sync Error:", err); }
         }
 
-        function renderMatches(packages) {
+        function renderMatches(joinedIds) {
             const list = document.getElementById('tournamentList');
             list.innerHTML = "";
-            packages.forEach((pkg, index) => {
-                const isGame = pkg.Title.toLowerCase().includes("ludo") || pkg.Title.toLowerCase().includes("game");
-                const actionBtn = isGame 
-                    ? `<button onclick="joinGame('${pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`
-                    : `<button onclick="alert('🔒 টুর্নামেন্টে জয়েন করতে লগইন করুন!')" style="background:#30363d; color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">JOIN NOW</button>`;
+            timers.forEach(t => clearInterval(t));
+
+            allPackages.forEach((pkg, index) => {
+                if (pkg.Title.toLowerCase().includes("ludo")) return;
+                
+                const isJoined = joinedIds.includes(pkg.Match_ID || pkg.Title);
+                const isGame = pkg.Type === "Game";
+                const timerId = `timer-${index}`;
+                const matchImg = pkg.img || "https://placehold.co/600x300/161b22/58a6ff?text=No+Image";
+                
+                // গেম হলে সরাসরি gameg.html এ যাবে, কোনো ব্যালেন্স কাটবে না
+                let actionButton;
+                if (isGame) {
+                    actionButton = `<button onclick="window.location.href='gameg.html'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`;
+                } else if (isJoined) {
+                    actionButton = `<span class="applied-tag">Applied ✅</span>`;
+                } else {
+                    actionButton = `<button onclick="openM('${pkg.Match_ID || pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">JOIN NOW</button>`;
+                }
 
                 list.innerHTML += `
                     <div class="match-card">
-                        <div class="timer-badge">${pkg.Time || 'Daily'}</div>
-                        <img src="${pkg.img || 'https://placehold.co/600x300/161b22/58a6ff?text=Match'}" class="match-banner">
+                        ${!isGame ? `<div id="${timerId}" class="timer-badge">Loading...</div>` : `<div class="timer-badge" style="color:#00d2fc; border-color:#00d2fc;">Play Anytime</div>`}
+                        <img src="${matchImg}" class="match-banner">
                         <div class="card-content">
                             <h3 style="margin: 0; color: #58a6ff;">${pkg.Title}</h3>
+                            <p style="font-size: 12px; color: gray; margin: 8px 0;">
+                                ${isGame ? `🎮 Guest Mode: Free Play` : `👥 Practice Tournament`}
+                            </p>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                <div style="font-weight:bold; color:#fff;">Fee: ${pkg.Fee} 💎</div>
-                                ${actionBtn}
+                                <div style="font-weight:bold; color:#fff; font-size: 15px;">Fee: ${pkg.Fee} 💎</div>
+                                ${actionButton}
                             </div>
                         </div>
                     </div>`;
+                if (!isGame && pkg.Time) startTimer(pkg.Time, timerId);
             });
         }
 
-        function joinGame(title) {
-            gSystem.inbox.unshift({ t: "Game Join", m: `${title} গেমে আপনি জয়েন করেছেন।`, d: new Date().toLocaleString() });
-            localStorage.setItem('g_sys', JSON.stringify(gSystem));
-            alert("সফলভাবে জয়েন করেছেন! ✅");
-            window.location.href = 'gameg.html';
+        function openM(id) {
+            const pkg = allPackages.find(p => (p.Match_ID === id || p.Title === id));
+            if(!pkg) return;
+            document.getElementById('mTitle').innerText = pkg.Title;
+            document.getElementById('mMap').innerText = pkg.Map || "TBA";
+            document.getElementById('mTime').innerText = pkg.Time || "TBA";
+            document.getElementById('mPrize').innerText = pkg.Prize_Pool || "Double Win";
+            document.getElementById('mRules').innerText = "Guest Mode: Real prizes not applicable.";
+            
+            const joinBtn = document.getElementById('joinConfirmBtn');
+            joinBtn.onclick = () => processGuestJoin(pkg);
+            document.getElementById('detailsModal').style.display = 'flex';
         }
 
-        // ডেইলি বোনাস লজিক
-        window.onload = () => {
-            const today = new Date().toDateString();
-            if (gSystem.last !== today) {
-                gSystem.coins += 100;
-                gSystem.iq += 200;
-                gSystem.last = today;
-                gSystem.inbox.unshift({ t: "System", m: "ডেইলি বোনাস ১০০ 💎 এবং ২০০ 🪙 যোগ হয়েছে!", d: new Date().toLocaleString() });
-                localStorage.setItem('g_sys', JSON.stringify(gSystem));
-                alert("🎁 ডেইলি বোনাস ১০০ ডায়মন্ড এবং ২০০ আইকিউ ব্যালেন্সে যোগ করা হয়েছে!");
+        function processGuestJoin(pkg) {
+            if (guestData.coins < pkg.Fee) {
+                alert("Insufficient Diamonds!");
+                return;
             }
-            updateUI();
-            syncData();
-        };
+            // লোকাল স্টোরেজ থেকে কয়েন কাটা
+            guestData.coins -= parseInt(pkg.Fee);
+            guestData.joinedMatches.push(pkg.Match_ID || pkg.Title);
+            localStorage.setItem('guest_user', JSON.stringify(guestData));
+            
+            alert("Joined Successfully (Guest Mode) ✅");
+            location.reload();
+        }
+
+        function startTimer(targetTime, elementId) {
+            function update() {
+                const now = new Date();
+                const bdNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000 * 6));
+                const diff = new Date(targetTime).getTime() - bdNow.getTime();
+                const el = document.getElementById(elementId);
+                if (!el) return;
+                if (diff <= 0) { el.innerText = "Ongoing"; return; }
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                el.innerText = `${h}h ${m}m ${s}s`;
+            }
+            update();
+            timers.push(setInterval(update, 1000));
+        }
+
+        function closeM() { document.getElementById('detailsModal').style.display = 'none'; }
+
+        syncData();
     </script>
 </body>
 </html>
