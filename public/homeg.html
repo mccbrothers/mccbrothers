@@ -304,7 +304,65 @@ const data = { packages: packages, coins: user.coins, joinedPackages: user.joine
         return obj;
     }).filter(o => o[headers[0]]); // খালি লাইন বাদ দেওয়ার জন্য
 }
+// --- নতুন বোনাস এবং ডেইলি রিওয়ার্ড সিস্টেম ---
 
+async function checkRewards() {
+    let localUser = JSON.parse(localStorage.getItem('user'));
+    if (!localUser) return;
+
+    // ১. প্রথমবার জয়েনিং বোনাস (৫০০ কয়েন)
+    if (!localUser.hasReceivedWelcomeBonus) {
+        localUser.coins = (localUser.coins || 0) + 500;
+        localUser.hasReceivedWelcomeBonus = true;
+        saveAndRefresh(localUser, "অভিনন্দন! আপনি ৫০০ কয়েন ওয়েলকাম বোনাস পেয়েছেন।");
+    }
+
+    // ২. ডেইলি লগইন রিওয়ার্ড (প্রতিদিন সকাল ৬টা)
+    try {
+        // ওয়ার্ল্ড টাইম এপিআই থেকে বাংলাদেশের বর্তমান সময় নেওয়া
+        const response = await fetch("https://worldtimeapi.org/api/timezone/Asia/Dhaka");
+        const data = await response.json();
+        const now = new Date(data.datetime); 
+        
+        // আজকের দিনের একটি ইউনিক আইডি তৈরি (সকাল ৬টার লজিকসহ)
+        // যদি ভোর ৬টার আগে হয়, তবে আগের দিনের রিওয়ার্ড ধরা হবে
+        let rewardDay = new Date(now);
+        if (now.getHours() < 6) {
+            rewardDay.setDate(now.getDate() - 1);
+        }
+        const dateString = rewardDay.toDateString(); // উদা: "Mon Oct 23 2023"
+
+        // যদি আজ রিওয়ার্ড না নিয়ে থাকে
+        if (localUser.lastRewardDate !== dateString) {
+            localUser.coins = (localUser.coins || 0) + 100;
+            localUser.lastRewardDate = dateString;
+            saveAndRefresh(localUser, "ডেইলি লগইন রিওয়ার্ড: ১০০ কয়েন আপনার একাউন্টে যোগ করা হয়েছে!");
+        }
+    } catch (error) {
+        console.log("Time Sync Error: ইন্টারনেট কানেকশন চেক করুন।");
+    }
+}
+
+function saveAndRefresh(userObj, message) {
+    localStorage.setItem('user', JSON.stringify(userObj));
+    
+    // ইনবক্সে মেসেজ সেভ করা (আপনার inboxg.html এর জন্য)
+    if(!userObj.messages) userObj.messages = [];
+    userObj.messages.unshift({
+        title: "Reward Update",
+        body: message,
+        time: new Date().toLocaleString(),
+        isRead: false
+    });
+    localStorage.setItem('user', JSON.stringify(userObj));
+    
+    alert(message);
+    location.reload(); // পেজ রিফ্রেশ করে ব্যালেন্স আপডেট দেখানো
+}
+
+// পেজ লোড হওয়ার ৫ সেকেন্ড পর রিওয়ার্ড চেক করবে
+setTimeout(checkRewards, 2000);
+        
     </script>
 </body>
 </html>
