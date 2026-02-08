@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andar Bahar - Royale Elite</title>
+    <style>
+        :root { 
+            --primary: #00d4ff; 
+            --danger: #ff4b2b; 
+            --success: #00f260; 
+            --gold: #ffca28; 
+            --bg: #0b0e11; 
+            --card-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        body { 
+            background: radial-gradient(circle at center, #1a1f25 0%, #050505 100%); 
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .game-container { 
+            max-width: 450px; 
+            width: 95%;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            padding: 20px; 
+            border-radius: 30px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8); 
+            position: relative;
+        }
+
+        .settings-icon {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #8b949e;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .settings-icon:hover { color: white; transform: rotate(90deg); }
+
+        #settings-panel {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background: #161b22;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #30363d;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+        #settings-panel input {
+            width: 80px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #30363d;
+            background: #0d1117;
+            color: var(--gold);
+            font-weight: bold;
+            outline: none;
+        }
+        #settings-panel button {
+            padding: 5px 10px;
+            background: var(--primary);
+            border: none;
+            border-radius: 5px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .balance-bar { 
+            display: flex; 
+            justify-content: space-around; 
+            margin-bottom: 20px; 
+            background: rgba(0,0,0,0.4);
+            padding: 12px; 
+            border-radius: 15px; 
+            border: 1px solid #30363d;
+        }
+
+        .balance-item { display: flex; flex-direction: column; }
+        .balance-label { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 2px; }
+        .balance-value { font-size: 16px; font-weight: 800; color: var(--gold); }
+
+        .game-table { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        .box-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; }
+
+        .card-box { 
+            width: 80px; height: 110px; border-radius: 10px; position: relative; 
+            background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.2);
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .joker-box { border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+
+        .label-text { font-size: 12px; margin-top: 10px; font-weight: 900; letter-spacing: 1px; }
+
+        .card { 
+            width: 75px; height: 105px; background: #fff; color: #1a1a1a; border-radius: 8px; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 20px; font-weight: bold; position: absolute; box-shadow: var(--card-shadow); 
+            border: 1px solid #ccc; animation: cardAppear 0.3s ease-out;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.5) translateY(-20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .card-suit-big { font-size: 28px; line-height: 1; }
+        .red { color: var(--danger); }
+        .black { color: #222; }
+
+        #status-msg { margin: 15px 0; font-weight: 700; font-size: 18px; height: 25px; text-transform: uppercase; text-align: center; }
+
+        .betting-section { display: flex; gap: 10px; margin-top: 20px; }
+        .bet-group { flex: 1; }
+
+        .bet-display { background: #161b22; padding: 6px; border-radius: 10px 10px 0 0; color: var(--gold); font-weight: bold; border: 1px solid #30363d; font-size: 14px; text-align: center; }
+        
+        /* নতুন ইনপুট ফিল্ড স্টাইল */
+        .bet-display input {
+            background: transparent;
+            border: none;
+            color: var(--gold);
+            font-weight: bold;
+            width: 65px;
+            text-align: center;
+            font-size: 16px;
+            outline: none;
+        }
+        .bet-display input::-webkit-inner-spin-button, 
+        .bet-display input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .btn-wrapper { display: flex; background: #21262d; border-radius: 0 0 10px 10px; padding: 4px; border: 1px solid #30363d; }
+
+        .side-btn { flex: 2; padding: 10px 2px; border: none; color: white; font-weight: 800; cursor: pointer; border-radius: 6px; font-size: 12px; }
+
+        .math-btn { flex: 0.7; background: transparent; border: none; color: #8b949e; font-size: 18px; cursor: pointer; }
+        
+        .andar-theme { background: linear-gradient(145deg, #2ea043, #238636); }
+        .bahar-theme { background: linear-gradient(145deg, #f85149, #da3633); }
+
+        button:disabled { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
+        input:disabled { opacity: 0.6; color: #8b949e !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
+    
+    <div id="settings-panel">
+        <input type="number" id="custom-coins" placeholder="Coins">
+        <button onclick="setCustomCoins()">Set</button>
+    </div>
+
+    <div class="balance-bar">
+        <div class="balance-item">
+            <span class="balance-label">Credits</span>
+            <span class="balance-value">💎 <span id="coins">0</span></span>
+        </div>
+        <div class="balance-item">
+            <span class="balance-label">Experience</span>
+            <span class="balance-value">🪙 <span id="iq">0</span></span>
+        </div>
+    </div>
+
+    <div id="status-msg">Place Your Bet</div>
+
+    <div class="game-table">
+        <div class="box-wrapper"><div class="card-box" id="andar-slot"></div><div class="label-text" style="color:var(--success)">ANDAR</div></div>
+        <div class="box-wrapper"><div class="card-box joker-box" id="joker-slot"></div><div class="label-text" style="color:var(--primary)">JOKER</div></div>
+        <div class="box-wrapper"><div class="card-box" id="bahar-slot"></div><div class="label-text" style="color:var(--danger)">BAHAR</div></div>
+    </div>
+
+    <div class="betting-section">
+        <div class="bet-group">
+            <div class="bet-display">
+                💎 <input type="number" id="input-Andar" value="20" onchange="validateInput('Andar')">
+            </div>
+            <div class="btn-wrapper">
+                <button class="math-btn" onclick="changeBet('Andar', -10)">−</button>
+                <button id="btnAndar" class="side-btn andar-theme" onclick="startGame('Andar')">ANDAR</button>
+                <button class="math-btn" onclick="changeBet('Andar', 10)">+</button>
+            </div>
+        </div>
+        <div class="bet-group">
+            <div class="bet-display">
+                💎 <input type="number" id="input-Bahar" value="20" onchange="validateInput('Bahar')">
+            </div>
+            <div class="btn-wrapper">
+                <button class="math-btn" onclick="changeBet('Bahar', -10)">−</button>
+                <button id="btnBahar" class="side-btn bahar-theme" onclick="startGame('Bahar')">BAHAR</button>
+                <button class="math-btn" onclick="changeBet('Bahar', 10)">+</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let localUser = JSON.parse(localStorage.getItem('user')) || { coins: 1000, iq_balance: 100 };
+    let bets = { Andar: 20, Bahar: 20 };
+    let deck = [], jokerValue = "", isPlaying = false;
+    const suits = [{s:'♥',c:'red'}, {s:'♦',c:'red'}, {s:'♣',c:'black'}, {s:'♠',c:'black'}];
+    const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+    function toggleSettings() {
+        let panel = document.getElementById('settings-panel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function setCustomCoins() {
+        let input = document.getElementById('custom-coins');
+        let amount = parseInt(input.value);
+        if (!isNaN(amount) && amount >= 0) {
+            localUser.coins = amount;
+            saveData();
+            refreshUI();
+            toggleSettings();
+            input.value = "";
+        }
+    }
+
+    // ইনপুট ভ্যালিডেশন ফাংশন
+    function validateInput(side) {
+        let inputField = document.getElementById(`input-${side}`);
+        let val = parseInt(inputField.value);
+        
+        if (isNaN(val) || val < 10) {
+            val = 10;
+        }
+        
+        if (val > localUser.coins) {
+            showTemporaryStatus("INSUFFICIENT BALANCE!", "var(--danger)");
+            val = localUser.coins < 10 ? 10 : localUser.coins;
+        }
+        
+        bets[side] = val;
+        inputField.value = val;
+    }
+
+    function changeBet(side, amount) {
+        if (isPlaying) return;
+        let newBet = bets[side] + amount;
+        if (newBet < 10) newBet = 10;
+        
+        if (newBet > localUser.coins) {
+            showTemporaryStatus("LIMIT EXCEEDED!", "var(--danger)");
+            newBet = localUser.coins < 10 ? 10 : localUser.coins;
+        }
+        
+        bets[side] = newBet;
+        document.getElementById(`input-${side}`).value = bets[side];
+    }
+
+    function startGame(side) {
+        validateInput(side); // খেলার আগে ইনপুট চেক
+        let currentBet = bets[side];
+        
+        if (localUser.coins < currentBet || localUser.coins <= 0) {
+            showTemporaryStatus("LOW BALANCE!", "var(--danger)");
+            return;
+        }
+        
+        isPlaying = true;
+        localUser.coins -= currentBet;
+        saveData();
+        refreshUI();
+        toggleControls(true);
+        runDealer(side, currentBet);
+    }
+
+    async function runDealer(playerSide, betAmount) {
+        let turn = "Andar";
+        while (isPlaying) {
+            await new Promise(r => setTimeout(r, 600));
+            const cardData = deck.splice(Math.floor(Math.random() * deck.length), 1)[0];
+            const slot = document.getElementById(turn === "Andar" ? "andar-slot" : "bahar-slot");
+            slot.innerHTML = ""; slot.appendChild(createCardUI(cardData));
+            if (cardData.val === jokerValue) {
+                finishGame(turn === playerSide, betAmount);
+                break;
+            }
+            turn = turn === "Andar" ? "Bahar" : "Andar";
+        }
+    }
+
+    function finishGame(win, betAmount) {
+        isPlaying = false;
+        const msg = document.getElementById('status-msg');
+        if (win) {
+            localUser.coins += (betAmount * 2);
+            localUser.iq_balance += 5;
+            msg.innerText = "WINNER! +💎" + (betAmount * 2);
+            msg.style.color = "var(--success)";
+        } else {
+            msg.innerText = "BET LOST! ❌";
+            msg.style.color = "var(--danger)";
+        }
+        saveData(); refreshUI();
+        setTimeout(() => { resetTable(); toggleControls(false); }, 2500);
+    }
+
+    function createCardUI(card) {
+        const div = document.createElement('div');
+        div.className = `card ${card.color}`;
+        div.innerHTML = `<div>${card.val}</div><div class="card-suit-big">${card.suit}</div>`;
+        return div;
+    }
+
+    function resetTable() {
+        document.getElementById('andar-slot').innerHTML = "";
+        document.getElementById('bahar-slot').innerHTML = "";
+        document.getElementById('status-msg').innerText = "Place Your Bet";
+        document.getElementById('status-msg').style.color = "white";
+        setInitialJoker();
+    }
+
+    function setInitialJoker() {
+        deck = [];
+        suits.forEach(s => values.forEach(v => deck.push({val:v, suit:s.s, color:s.c})));
+        const joker = deck.splice(Math.floor(Math.random() * deck.length), 1)[0];
+        jokerValue = joker.val;
+        const slot = document.getElementById('joker-slot');
+        slot.innerHTML = ""; slot.appendChild(createCardUI(joker));
+    }
+
+    function showTemporaryStatus(text, color) {
+        const msg = document.getElementById('status-msg');
+        msg.innerText = text; msg.style.color = color;
+        setTimeout(() => { if (!isPlaying) { msg.innerText = "Place Your Bet"; msg.style.color = "white"; } }, 2000);
+    }
+
+    function toggleControls(state) {
+        document.getElementById('btnAndar').disabled = state;
+        document.getElementById('btnBahar').disabled = state;
+        document.getElementById('input-Andar').disabled = state;
+        document.getElementById('input-Bahar').disabled = state;
+    }
+
+    function refreshUI() {
+        document.getElementById('coins').innerText = localUser.coins;
+        document.getElementById('iq').innerText = localUser.iq_balance;
+    }
+
+    function saveData() { localStorage.setItem('user', JSON.stringify(localUser)); }
+
+    setInitialJoker();
+    refreshUI();
+</script>
+</body>
+  </html>
+              
