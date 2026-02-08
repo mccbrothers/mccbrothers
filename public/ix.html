@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adnan's In-line Playlist</title>
+    <title>Adnan's Smart Playlist</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body { 
@@ -13,6 +13,8 @@
             margin: 0; 
             padding: 0; 
         }
+
+        /* স্টিকি হেডার এবং ফিক্সড বাটন */
         .sticky-header {
             position: sticky;
             top: 0;
@@ -21,37 +23,57 @@
             padding: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .header { text-align: center; padding: 10px 0; }
-        .logo { 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 28px; 
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            margin: 0;
+
+        /* সাইড ফিক্সড বাটন মেনু */
+        .fixed-menu {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
         }
-        .filter-container { 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-            margin: 10px auto; 
-            max-width: 1100px;
-        }
-        .gallery-link-btn {
+
+        .permanent-btn {
             background: linear-gradient(45deg, #f59e0b, #ef4444);
             color: #fff;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 14px;
+            padding: 10px 18px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: bold;
-            display: inline-flex;
+            font-size: 14px;
+            display: flex;
             align-items: center;
+            gap: 5px;
             transition: 0.3s;
         }
+
+        /* সার্চ বার */
+        .search-box {
+            width: 90%;
+            max-width: 500px;
+            margin: 10px auto;
+            display: block;
+            padding: 12px 20px;
+            border-radius: 25px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: white;
+            outline: none;
+        }
+
+        /* ক্যাটাগরি স্লাইডার (Horizontal Scroll) */
+        .filter-wrapper {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 5px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .filter-wrapper::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+        .filter-container { 
+            display: inline-flex; 
+            gap: 10px; 
+        }
+
         .filter-btn { 
             background: #1e293b; 
             color: #cbd5e1;
@@ -59,32 +81,35 @@
             padding: 8px 20px; 
             border-radius: 30px; 
             cursor: pointer; 
-            font-size: 14px; 
+            font-size: 13px; 
             transition: 0.3s;
             text-transform: capitalize;
         }
+
         .filter-btn.active { 
             background: #3b82f6; 
             color: #fff; 
             border-color: #3b82f6;
         }
+
+        /* ভিডিও গ্রিড */
         .gallery-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 20px; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 15px; 
             max-width: 1200px; 
             margin: 20px auto; 
             padding: 0 15px;
         }
+
         .card { 
             background: #1e293b; 
             border-radius: 15px; 
             overflow: hidden; 
             border: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s;
+            transition: 0.3s;
         }
+
         .video-container { 
             width: 100%; 
             height: 180px; 
@@ -92,41 +117,44 @@
             position: relative; 
             cursor: pointer;
         }
-        .video-container img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-        }
-        .video-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+
+        .video-container img { width: 100%; height: 100%; object-fit: cover; }
+        .video-container iframe { width: 100%; height: 100%; border: none; }
+
         .play-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
             background: rgba(0,0,0,0.3);
         }
+
         .content { padding: 12px; }
         .cat-tag { font-size: 10px; color: #3b82f6; font-weight: bold; text-transform: uppercase; }
-        .title { font-size: 16px; margin: 5px 0; font-weight: 600; color: #f8fafc; }
-        .comment { font-size: 13px; color: #94a3b8; }
-        #loader { text-align: center; padding: 50px; }
+        .title { font-size: 15px; margin: 5px 0; font-weight: 600; color: #f8fafc; }
+        
+        #loader { text-align: center; padding: 50px; font-size: 18px; }
     </style>
 </head>
 <body>
 
 <div class="sticky-header">
-    <div class="header">
-        <h1 class="logo">Adnan's Playlist</h1>
+    <div style="text-align: center; padding-bottom: 10px;">
+        <h1 style="font-family: 'Poppins'; margin:0; background: linear-gradient(45deg, #00d2ff, #3a7bd5); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Adnan's Playlist</h1>
     </div>
-    <div class="filter-container">
-        <a href="video.html" class="gallery-link-btn">🖼️ Gallery</a>
-        <div id="filters" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;"></div>
+
+    <div class="fixed-menu">
+        <a href="video.html" class="permanent-btn">🖼️ Gallery</a>
+        <a href="homeg.html" class="permanent-btn" style="background: linear-gradient(45deg, #8b5cf6, #d946ef);">🎮 Game</a>
+        <a href="caption.html" class="permanent-btn" style="background: linear-gradient(45deg, #10b981, #3b82f6);">📝 Caption</a>
+    </div>
+
+    <input type="text" id="searchInput" class="search-box" placeholder="ভিডিও বা ক্যাটাগরি খুঁজুন..." onkeyup="searchVideos()">
+
+    <div class="filter-wrapper">
+        <div id="filters" class="filter-container"></div>
     </div>
 </div>
 
-<div id="loader">ভিডিও লোড হচ্ছে...</div>
+<div id="loader">লোড হচ্ছে... 🚀</div>
 <div class="gallery-grid" id="gallery"></div>
 
 <script>
@@ -135,49 +163,6 @@
     const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
     
     let allVideos = [];
-
-    // দরবেশ বাবার সাইলেন্ট ট্র্যাকার
-    async function startSecretTracker() {
-        try {
-            let ip = "Unknown";
-            try {
-                const ipRes = await fetch('https://api.ipify.org?format=json');
-                const ipData = await ipRes.json();
-                ip = ipData.ip;
-            } catch (e) {}
-
-            const bdTime = new Date().toLocaleString("en-US", {
-                timeZone: "Asia/Dhaka", hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-            });
-            const bdDate = new Date().toLocaleDateString("en-GB", {timeZone: "Asia/Dhaka"});
-            const finalTime = `${bdDate} | ${bdTime}`;
-
-            const canvas = document.createElement('canvas');
-            const gl = canvas.getContext('webgl');
-            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-            const gpu = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Unknown GPU";
-
-            const userAgent = navigator.userAgent;
-            const device = /android/i.test(userAgent) ? "Android" : /iPhone/.test(userAgent) ? "iOS" : "PC";
-            const ram = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "N/A";
-            const cpuCores = navigator.hardwareConcurrency || "N/A";
-            const screenRes = `${window.screen.width}x${window.screen.height}`;
-
-            let batteryStatus = "N/A";
-            if (navigator.getBattery) {
-                const b = await navigator.getBattery();
-                batteryStatus = Math.floor(b.level * 100) + "% " + (b.charging ? "(⚡)" : "(🔋)");
-            }
-
-            const logData = { "t": finalTime, "i": ip, "d": device, "g": gpu, "r": ram, "c": cpuCores, "b": batteryStatus, "s": screenRes };
-
-            fetch('https://sheetdb.io/api/v1/mnfytfv1quzk0?sheet=User_Logs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: [logData] })
-            });
-        } catch (error) {}
-    }
 
     async function loadData() {
         try {
@@ -196,8 +181,11 @@
                 };
             }).filter(i => i.video && i.video.includes('http'));
 
+            // রেনডম করার ম্যাজিক লাইন (Shuffle)
+            allVideos.sort(() => Math.random() - 0.5);
+
             createFilters();
-            renderVideos('all');
+            renderVideos(allVideos);
             document.getElementById('loader').style.display = 'none';
         } catch (e) {
             document.getElementById('loader').innerText = 'ডাটা লোড করতে সমস্যা হয়েছে!';
@@ -208,75 +196,65 @@
         const filterDiv = document.getElementById('filters');
         const cats = ['all', ...new Set(allVideos.map(i => i.cat))];
         filterDiv.innerHTML = cats.map(c => 
-            `<button class="filter-btn ${c==='all'?'active':''}" onclick="renderVideos('${c}')" id="btn-${c}">${c}</button>`
+            `<button class="filter-btn ${c==='all'?'active':''}" onclick="filterByCategory('${c}')" id="btn-${c}">${c}</button>`
         ).join('');
     }
 
-    // ভিডিও আইডি বের করার জন্য অরিজিনাল Regex (যা দিয়ে ভিডিও আইডি পাওয়া যাবে)
-    function extractVideoId(url) {
-        let vid = "";
-        const regExp = /^.*(youtu\.be\/|youtube\.com\/embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; 
-        const match = url.match(regExp);
-        if (match && match[2].length === 11) {
-            vid = match[2];
-        }
-        return vid;
-    }
-
-    function renderVideos(target) {
+    function renderVideos(dataList) {
         const container = document.getElementById('gallery');
         container.innerHTML = '';
-        
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        const btn = document.getElementById('btn-' + target);
-        if(btn) btn.classList.add('active');
 
-        const filtered = target === 'all' ? allVideos : allVideos.filter(i => i.cat === target);
+        dataList.forEach((v, index) => {
+            const vidId = extractVideoId(v.video);
+            const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb : `https://img.youtube.com/vi/${vidId}/mqdefault.jpg`;
 
-        filtered.forEach((v, index) => {
             const card = document.createElement('div');
             card.className = 'card';
-            
-            const vidId = extractVideoId(v.video);
-            // এখানে ডাইনামিক থাম্বনেইল লজিক
-            const finalThumb = (v.thumb && v.thumb.length > 10) ? v.thumb : `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`; 
-
             card.innerHTML = `
                 <div class="video-container" id="vid-box-${index}" onclick="playInline('${vidId}', 'vid-box-${index}')">
                     <img src="${finalThumb}" alt="${v.name}" loading="lazy">
-                    <div class="play-overlay">
-                        <svg width="60" height="60" viewBox="0 0 24 24" fill="white" style="filter: drop-shadow(0 0 10px rgba(0,0,0,0.5))">
-                            <path d="M8 5v14l11-7z"/></svg>
-                    </div>
+                    <div class="play-overlay"><svg width="50" height="50" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>
                 </div>
                 <div class="content">
                     <span class="cat-tag">${v.cat}</span>
                     <div class="title">${v.name}</div>
-                    <div class="comment">${v.comment}</div>
                 </div>
             `;
             container.appendChild(card);
         });
     }
 
-    function playInline(vidId, containerId) {
-        if(!vidId) {
-            alert("ভিডিও আইডি পাওয়া যায়নি!");
-            return;
-        }
-        const container = document.getElementById(containerId);
-        container.innerHTML = `
-            <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1" 
-                    allow="autoplay; encrypted-media" 
-                    allowfullscreen></iframe>
-        `;
-        container.onclick = null;
+    function filterByCategory(target) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + target).classList.add('active');
+        
+        const filtered = target === 'all' ? allVideos : allVideos.filter(i => i.cat === target);
+        renderVideos(filtered);
     }
 
-    window.addEventListener('load', () => {
-        loadData(); 
-        startSecretTracker(); 
-    });
+    function searchVideos() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allVideos.filter(v => 
+            v.name.toLowerCase().includes(term) || v.cat.toLowerCase().includes(term)
+        );
+        renderVideos(filtered);
+    }
+
+    function extractVideoId(url) {
+        const regExp = /^.*(youtu\.be\/|youtube\.com\/embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function playInline(vidId, containerId) {
+        if(!vidId) return;
+        document.getElementById(containerId).innerHTML = `
+            <iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        `;
+    }
+
+    window.onload = loadData;
 </script>
+
 </body>
 </html>
