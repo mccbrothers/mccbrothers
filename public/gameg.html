@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper Pro</title>
+    <style>
+        body { background: #0d1117; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid #30363d; }
+        
+        .pkg-btn { padding: 10px; margin: 5px; cursor: pointer; border: 1px solid #58a6ff; background: transparent; color: #58a6ff; border-radius: 5px; width: 30%; }
+        .active-pkg { background: #58a6ff !important; color: white !important; }
+        
+        .pay-btn { padding: 10px; margin: 5px; cursor: pointer; border: 1px solid #f1e05a; background: transparent; color: #f1e05a; border-radius: 5px; width: 45%; }
+        .active-pay { background: #f1e05a !important; color: black !important; }
+
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
+        .cell { 
+            aspect-ratio: 1/1; background: #21262d; border: 2px solid #30363d; 
+            border-radius: 8px; display: flex; align-items: center; justify-content: center; 
+            font-size: 20px; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 4px 0 #000;
+        }
+        .cell:active { transform: translateY(3px); box-shadow: none; }
+        .revealed { background: #0d1117 !important; border-color: #58a6ff; box-shadow: none !important; cursor: default; }
+        .bomb { background: #f85149 !important; }
+
+        .btn-main { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .start { background: #238636; color: white; }
+        .cashout { background: #f1e05a; color: black; display: none; }
+        #msg { margin-top: 15px; font-size: 14px; font-weight: bold; color: #ffcc00; }
+        
+        /* ব্যালেন্স স্টাইল */
+        .balance-bar { display: flex; justify-content: space-around; background: #0d1117; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #30363d; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>💣 MINESWEEPER</h2>
+
+    <div class="balance-bar">
+        <span>🪙 Real: <b id="userCoins">0</b></span>
+        <span>🧠 IQ: <b id="userIQ">0</b></span>
+    </div>
+
+    <div id="setup">
+        <p>প্যাকেজ বেছে নিন:</p>
+        <button class="pkg-btn" onclick="setPkg('5tk', this)">5 TK</button>
+        <button class="pkg-btn active-pkg" onclick="setPkg('10tk', this)">10 TK</button>
+        <button class="pkg-btn" onclick="setPkg('50tk', this)">50 TK</button>
+        <button class="pkg-btn" onclick="setPkg('100tk', this)">100 TK</button>
+
+        <p>পেমেন্ট মেথড:</p>
+        <button id="pReal" class="pay-btn active-pay" onclick="setPay('Real')">REAL COIN</button>
+        <button id="pIQ" class="pay-btn" onclick="setPay('IQ')">IQ BALANCE</button>
+
+        <button class="btn-main start" onclick="startGame()">গেম শুরু করুন</button>
+    </div>
+
+    <div id="gameArea" style="display:none;">
+        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+            <span>লাভ: <span id="winTxt">0.00</span></span>
+            <span id="modeTxt"></span>
+        </div>
+        <div class="grid" id="board"></div>
+        <button id="coBtn" class="btn-main cashout" onclick="cashOut()">টাকা তুলে নিন</button>
+    </div>
+
+    <div id="msg">সার্ভার অনলাইন ✅</div>
+</div>
+
+<script>
+    let localUser = JSON.parse(localStorage.getItem('user'));
+    
+    let selectedPkg = '10tk';
+    let selectedPay = 'Real';
+    let isEnded = false;
+    let bombLocation;
+    let gameFee;
+    let profitPerBox;
+    let revealedCount = 0;
+
+    // ইউআই ব্যালেন্স আপডেট করার ফাংশন
+    function updateBalanceUI() {
+        if(localUser) {
+            document.getElementById('userCoins').innerText = localUser.coins || 0;
+            document.getElementById('userIQ').innerText = localUser.iq_balance || 0;
+        }
+    }
+
+    function setPkg(p, btn) {
+        selectedPkg = p;
+        document.querySelectorAll('.pkg-btn').forEach(b => b.classList.remove('active-pkg'));
+        btn.classList.add('active-pkg');
+    }
+
+    function setPay(type) {
+        selectedPay = type;
+        document.getElementById('pReal').className = type === 'Real' ? 'pay-btn active-pay' : 'pay-btn';
+        document.getElementById('pIQ').className = type === 'IQ' ? 'pay-btn active-pay' : 'pay-btn';
+    }
+
+    function startGame() {
+        const pkgConfig = { '5tk': 5, '10tk': 10, '50tk': 50, '100tk': 100 };
+        gameFee = pkgConfig[selectedPkg];
+        profitPerBox = gameFee * 0.1; 
+
+        const targetCol = selectedPay === 'Real' ? 'coins' : 'iq_balance';
+
+        if (localUser[targetCol] >= gameFee) {
+            localUser[targetCol] -= gameFee;
+            localStorage.setItem('user', JSON.stringify(localUser));
+            updateBalanceUI(); // ব্যালেন্স কমার পর আপডেট
+
+            bombLocation = Math.floor(Math.random() * 25);
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            createBoard();
+        } else {
+            alert("পর্যাপ্ত ব্যালেন্স নেই!");
+        }
+    }
+
+    function move(idx, el) {
+        if (isEnded || el.classList.contains('revealed')) return;
+
+        if (idx === bombLocation) {
+            isEnded = true;
+            el.classList.add('bomb');
+            el.innerHTML = '💣';
+            saveMessage(`আপনি ${selectedPkg} প্যাকেজে ${selectedPay} মুডে হেরেছেন।`);
+            alert("বুম! আপনি হেরেছেন।");
+            location.reload();
+        } else {
+            el.classList.add('revealed');
+            el.innerHTML = '💎';
+            revealedCount++;
+            let currentWin = (profitPerBox * revealedCount).toFixed(2);
+            document.getElementById('winTxt').innerText = currentWin;
+            document.getElementById('coBtn').style.display = 'block';
+        }
+    }
+
+    function createBoard() {
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.innerHTML = '👆'; 
+            cell.onclick = () => move(i, cell);
+            board.appendChild(cell);
+        }
+    }
+
+    function cashOut() {
+        if (isEnded || revealedCount === 0) return;
+        isEnded = true;
+
+        let winAmount = profitPerBox * revealedCount;
+        const targetCol = selectedPay === 'Real' ? 'coins' : 'iq_balance';
+
+        localUser[targetCol] += Math.floor(winAmount);
+        saveMessage(`অভিনন্দন! আপনি ${selectedPkg} এ খেলে ${winAmount.toFixed(2)} ${selectedPay} জিতেছেন।`);
+        
+        localStorage.setItem('user', JSON.stringify(localUser));
+        updateBalanceUI(); // জেতার পর ব্যালেন্স আপডেট
+
+        alert("আপনি জিতেছেন: " + winAmount.toFixed(2) + "!");
+        window.location.href = 'homeg.html';
+    }
+
+    function saveMessage(msg) {
+        if(!localUser.messages) localUser.messages = [];
+        const newMsg = { title: "Game Update", body: msg, time: new Date().toLocaleString(), isRead: false };
+        localUser.messages.unshift(newMsg);
+        localStorage.setItem('user', JSON.stringify(localUser));
+    }
+
+    // শুরুতে ব্যালেন্স দেখানো
+    updateBalanceUI();
+</script>
+
+</body>
+</html>
