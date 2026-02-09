@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Zfox__fc26</title>
-    <body style="background-color: #0d1117; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+</head>
+<body style="background-color: #0d1117; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
 
     <div style="background: #161b22; padding: 30px; border-radius: 15px; width: 320px; text-align: center; border: 1px solid #30363d;">
         <h2 style="color: #58a6ff;">Zfox__Fc26</h2>
@@ -25,21 +26,67 @@
     </div>
 
     <script>
-        if (sessionStorage.getItem('user')) { window.location.href = 'home.html'; }
+        // --- ১. স্মার্ট গেট লজিক (অটো রিডাইরেক্ট) ---
+        (function() {
+            // যদি আগে থেকেই সেশনে থাকে
+            if (sessionStorage.getItem('user')) {
+                window.location.href = 'home.html';
+                return;
+            }
+
+            // যদি লোকাল স্টোরেজে ডাটা থাকে (আগের সফল লগইন থেকে)
+            const savedUser = localStorage.getItem('user_token');
+            if (savedUser) {
+                // পাসওয়ার্ড ছাড়াই সেশন স্টোরেজে ডাটা কপি করে দিচ্ছে
+                sessionStorage.setItem('user', savedUser);
+                // সরাসরি হোম পেজে পাঠিয়ে দিচ্ছে
+                window.location.href = 'home.html';
+            }
+        })();
+
+        // --- ২. ম্যানুয়াল লগইন ফাংশন ---
         async function handleLogin() {
+            const loginBtn = document.getElementById('loginBtn');
+            const errorEl = document.getElementById('login-error');
             const gameId = document.getElementById('loginId').value;
             const pin = document.getElementById('loginPin').value;
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gameId, pin })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                sessionStorage.setItem('user', JSON.stringify(data.user));
-                window.location.href = 'home.html';
-            } else {
-                document.getElementById('login-error').innerText = data.message;
+
+            if (!gameId || !pin) {
+                errorEl.innerText = "UID এবং PIN প্রদান করুন!";
+                return;
+            }
+
+            loginBtn.innerText = "Checking...";
+            loginBtn.disabled = true;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameId, pin })
+                });
+                
+                const data = await res.json();
+
+                if (res.ok) {
+                    const userData = JSON.stringify(data.user);
+                    
+                    // বর্তমান সেশনের জন্য সেট করা
+                    sessionStorage.setItem('user', userData);
+                    
+                    // ভবিষ্যতে অটো-লগইনের জন্য লোকাল স্টোরেজে টোকেন হিসেবে সেভ করা
+                    localStorage.setItem('user_token', userData);
+                    
+                    window.location.href = 'home.html';
+                } else {
+                    errorEl.innerText = data.message || "লগইন ব্যর্থ হয়েছে!";
+                    loginBtn.innerText = "LOGIN";
+                    loginBtn.disabled = false;
+                }
+            } catch (err) {
+                errorEl.innerText = "সার্ভার ত্রুটি! আবার চেষ্টা করুন।";
+                loginBtn.innerText = "LOGIN";
+                loginBtn.disabled = false;
             }
         }
     </script>
