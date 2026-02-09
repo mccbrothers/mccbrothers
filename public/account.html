@@ -9,12 +9,18 @@
         .profile-header { background: linear-gradient(135deg, #161b22 0%, #0d1117 100%); padding: 40px 20px; text-align: center; border-bottom: 1px solid #30363d; position: relative; }
         .avatar { width: 90px; height: 90px; background: linear-gradient(45deg, #58a6ff, #00d2ff); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; box-shadow: 0 0 20px rgba(88, 166, 255, 0.3); border: 3px solid #30363d; }
         
+        /* 💎 ডায়মন্ড ব্যালেন্স বক্স (Home Page Style) */
+        .premium-box {
+            display: inline-flex; align-items: center; gap: 8px; background: #161b22; 
+            padding: 8px 15px; border-radius: 12px; border: 1px solid #58a6ff;
+            box-shadow: 0 0 10px rgba(88, 166, 255, 0.1); margin-top: 10px;
+        }
+
         .info-card { background: #161b22; margin: -20px 20px 20px; padding: 20px; border-radius: 15px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .stat-box { background: #0d1117; padding: 15px; border-radius: 12px; border: 1px solid #30363d; text-align: center; }
+        .stat-box { background: #0d1117; padding: 15px; border-radius: 12px; border: 1px solid #30363d; text-align: center; margin-bottom: 15px; }
         
         .security-box { background: #1c2128; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px dashed #58a6ff; display: flex; justify-content: space-between; align-items: center; }
-        .pass-text { font-family: monospace; font-size: 16px; color: #58a6ff; display: none; }
+        .pass-text { font-family: monospace; font-size: 14px; color: #58a6ff; display: none; word-break: break-all; margin-right: 10px; }
         
         .action-btn { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; }
         .action-btn:hover { background: #30363d; }
@@ -22,9 +28,8 @@
         .history-section { padding: 20px; }
         .order-item { background: #161b22; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #238636; display: flex; justify-content: space-between; }
         
-        .logout-btn { color: #f85149; border-color: #f85149; margin-top: 25px; width: 100%; padding: 12px; background: rgba(248, 81, 73, 0.1); }
+        .logout-btn { color: #f85149; border: 1px solid #f85149; margin-top: 25px; width: 100%; padding: 12px; background: rgba(248, 81, 73, 0.1); border-radius: 10px; cursor: pointer; font-weight: bold; }
         
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
         .nav-btn { background:none; border:none; color:gray; text-decoration: none; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-btn.active { color:#58a6ff; }
@@ -34,38 +39,36 @@
 
     <div class="profile-header">
         <div class="avatar">👤</div>
-        <h2 id="accName" style="margin: 0;">Loading...</h2>
-        <p style="color: #8b949e; margin: 5px 0;">Premium Member</p>
+        <h2 id="accName" style="margin: 0;">User Name</h2>
+        
+        <div class="premium-box">
+             <span style="font-size: 16px; font-weight: bold; color: white;">💎 <span id="accCoins">0</span></span>
+             <span style="font-size: 11px; color: #58a6ff; font-weight: bold; margin-left: 5px;">DIAMONDS</span>
+        </div>
     </div>
 
     <div class="info-card">
-        <div class="stat-grid">
-            <div class="stat-box">
-                <div style="font-size: 11px; color: gray; margin-bottom: 5px;">UID</div>
-                <div id="accId" style="font-weight: bold; color: #58a6ff;">0000</div>
-            </div>
-            <div class="stat-box">
-                <div style="font-size: 11px; color: gray; margin-bottom: 5px;">COINS</div>
-                <div id="accCoins" style="font-weight: bold; color: #ffcc00;">0 💎</div>
-            </div>
+        <div class="stat-box">
+            <div style="font-size: 11px; color: gray; margin-bottom: 5px;">ACCOUNT UID</div>
+            <div id="accId" style="font-weight: bold; color: #58a6ff; font-size: 18px;">00000000</div>
         </div>
 
         <div class="security-box">
-            <div>
+            <div style="flex: 1;">
                 <div style="font-size: 11px; color: gray;">Access PIN</div>
-                <span id="pinStars">****</span>
+                <span id="pinStars" style="letter-spacing: 2px;">••••</span>
                 <span id="pinValue" class="pass-text"></span>
             </div>
             <button id="togglePin" class="action-btn" onclick="togglePin()">Show</button>
         </div>
 
-        <button onclick="logout()" class="action-btn logout-btn">Logout Account</button>
+        <button onclick="logout()" class="logout-btn">Logout Account</button>
     </div>
 
     <div class="history-section">
         <h3 style="font-size: 16px; margin-bottom: 15px; color: #8b949e; border-bottom: 1px solid #30363d; padding-bottom: 8px;">Purchase History</h3>
         <div id="orderList">
-            <p style="color: gray; text-align: center;">Loading...</p>
+            <p style="color: gray; text-align: center;">Loading History...</p>
         </div>
     </div>
 
@@ -80,24 +83,23 @@
         const user = JSON.parse(sessionStorage.getItem('user'));
         if(!user) location.href = 'index.html';
 
-        // ডাটা রেন্ডার করা
+        // প্রাথমিক ডাটা রেন্ডার
         document.getElementById('accName').innerText = user.name;
         document.getElementById('accId').innerText = user.gameId;
-        document.getElementById('accCoins').innerText = user.coins;
-        
-        // পাসওয়ার্ড/পিন সেট করা (ডাটা স্টোরেজে থাকলে)
-        if(user.pin) { 
-            document.getElementById('pinValue').innerText = user.pin;
-        } else {
-            document.getElementById('pinValue').innerText = "PIN Not Found";
-        }
+        document.getElementById('accCoins').innerText = user.coins || 0;
 
+        // পাসওয়ার্ড টগল ফাংশন (সরাসরি ইনপুট থেকে নেওয়া ডাটা দেখাবে)
         function togglePin() {
             const stars = document.getElementById('pinStars');
             const val = document.getElementById('pinValue');
             const btn = document.getElementById('togglePin');
 
+            // লোকাল স্টোরেজ থেকে ইনপুট দেওয়া আইডি এবং পিন নেওয়া
+            const savedId = localStorage.getItem('saved_id') || "N/A";
+            const savedPin = localStorage.getItem('saved_pin') || "N/A";
+
             if (val.style.display === "none" || val.style.display === "") {
+                val.innerText = `ID: ${savedId} | PIN: ${savedPin}`;
                 val.style.display = "inline";
                 stars.style.display = "none";
                 btn.innerText = "Hide";
@@ -108,28 +110,30 @@
             }
         }
 
+        // সার্ভার থেকে রিয়েল-টাইম ডাটা ফেচ করা
         async function fetchAccountData() {
             try {
                 const response = await fetch(`/api/get-packages?gameId=${user.gameId}`);
                 if (!response.ok) throw new Error();
                 const data = await response.json();
+                
                 document.getElementById('accCoins').innerText = data.coins;
                 renderOrders(data.joinedPackages || []);
             } catch (err) {
-                document.getElementById('orderList').innerHTML = "<p style='color:gray;'>Failed to load history.</p>";
+                document.getElementById('orderList').innerHTML = "<p style='color:gray; text-align:center;'>Failed to load history.</p>";
             }
         }
 
         function renderOrders(orders) {
             const list = document.getElementById('orderList');
-            list.innerHTML = orders.length === 0 ? "<p style='color:gray;'>No purchases yet.</p>" : "";
+            list.innerHTML = orders.length === 0 ? "<p style='color:gray; text-align:center;'>No purchases yet.</p>" : "";
             
             orders.reverse().forEach(pkgName => {
                 list.innerHTML += `
                     <div class="order-item">
                         <div>
                             <div style="font-weight:bold; font-size:14px;">${pkgName}</div>
-                            <div style="font-size:11px; color:gray;">Success Login / Entry</div>
+                            <div style="font-size:11px; color:gray;">Tournament Entry</div>
                         </div>
                         <div style="color: #238636; font-size: 18px;">✔</div>
                     </div>`;
@@ -137,14 +141,12 @@
         }
 
         function logout() {
-            if(confirm("আপনি কি এই একাউন্টটি থেকে লগআউট করতে চান?")) {
-                // ১. সেশন ক্লিয়ার করা
-                sessionStorage.clear(); 
-                
-                // ২. স্মার্ট লোকাল স্টোরেজ ডিলিট (শুধুমাত্র এই নির্দিষ্ট একাউন্টের জন্য)
-                // যদি আপনার লোকাল স্টোরেজে কি (key) টা 'user_token' হয়
-                localStorage.removeItem('user_token'); 
-                
+            if(confirm("আপনি কি লগআউট করতে চান?")) {
+                sessionStorage.clear();
+                // আপনার রিকোয়েস্ট অনুযায়ী লোকাল স্টোরেজ থেকে এই আইডির ডাটা ডিলিট
+                localStorage.removeItem('user_token');
+                localStorage.removeItem('saved_id');
+                localStorage.removeItem('saved_pin');
                 location.href = 'index.html';
             }
         }
