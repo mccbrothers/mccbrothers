@@ -4,95 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account - Elite Nexus</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background-color: #0d1117; color: white; margin: 0; padding-bottom: 80px; font-family: 'Segoe UI', sans-serif; }
+        .profile-header { background: linear-gradient(135deg, #161b22 0%, #0d1117 100%); padding: 40px 20px; text-align: center; border-bottom: 1px solid #30363d; position: relative; }
+        .avatar { width: 90px; height: 90px; background: linear-gradient(45deg, #58a6ff, #00d2ff); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; box-shadow: 0 0 20px rgba(88, 166, 255, 0.3); border: 3px solid #30363d; }
+        
+        .info-card { background: #161b22; margin: -20px 20px 20px; padding: 20px; border-radius: 15px; border: 1px solid #30363d; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .stat-box { background: #0d1117; padding: 15px; border-radius: 12px; border: 1px solid #30363d; text-align: center; }
+        
+        .security-box { background: #1c2128; padding: 15px; border-radius: 12px; margin-top: 15px; border: 1px dashed #58a6ff; display: flex; justify-content: space-between; align-items: center; }
+        .pass-text { font-family: monospace; font-size: 16px; color: #58a6ff; display: none; }
+        
+        .action-btn { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .action-btn:hover { background: #30363d; }
+        
+        .history-section { padding: 20px; }
+        .order-item { background: #161b22; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #238636; display: flex; justify-content: space-between; }
+        
+        .logout-btn { color: #f85149; border-color: #f85149; margin-top: 25px; width: 100%; padding: 12px; background: rgba(248, 81, 73, 0.1); }
+        
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d; z-index: 100; }
+        .nav-btn { background:none; border:none; color:gray; text-decoration: none; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-btn.active { color:#58a6ff; }
+    </style>
 </head>
-<body style="background-color: #0d1117; color: white; margin: 0; padding-bottom: 70px;">
+<body>
 
-    <div style="background: linear-gradient(to bottom, #161b22, #0d1117); padding: 30px 20px; text-align: center; border-bottom: 1px solid #30363d;">
-        <div style="width: 80px; height: 80px; background: #58a6ff; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px;">
-            👤
-        </div>
-        <h2 id="accName" style="margin: 5px 0;">Loading...</h2>
-        <p style="color: gray; margin: 0;">UID: <span id="accId">0000</span></p>
-        <div style="margin-top: 15px; display: inline-block; background: #238636; padding: 5px 15px; border-radius: 20px; font-weight: bold;">
-            Coins: <span id="accCoins">0</span> 💎 
-        </div>
-        <button onclick="logout()" style="display:block; margin: 20px auto 0; background:none; border:1px solid #da3633; color:#da3633; padding:5px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">Logout</button>
+    <div class="profile-header">
+        <div class="avatar">👤</div>
+        <h2 id="accName" style="margin: 0;">Loading...</h2>
+        <p style="color: #8b949e; margin: 5px 0;">Premium Member</p>
     </div>
 
-    <div style="padding: 20px;">
-        <h3 style="margin-bottom: 15px; color: #58a6ff;">Purchase History</h3>
+    <div class="info-card">
+        <div class="stat-grid">
+            <div class="stat-box">
+                <div style="font-size: 11px; color: gray; margin-bottom: 5px;">UID</div>
+                <div id="accId" style="font-weight: bold; color: #58a6ff;">0000</div>
+            </div>
+            <div class="stat-box">
+                <div style="font-size: 11px; color: gray; margin-bottom: 5px;">COINS</div>
+                <div id="accCoins" style="font-weight: bold; color: #ffcc00;">0 💎</div>
+            </div>
+        </div>
+
+        <div class="security-box">
+            <div>
+                <div style="font-size: 11px; color: gray;">Access PIN</div>
+                <span id="pinStars">****</span>
+                <span id="pinValue" class="pass-text"></span>
+            </div>
+            <button id="togglePin" class="action-btn" onclick="togglePin()">Show</button>
+        </div>
+
+        <button onclick="logout()" class="action-btn logout-btn">Logout Account</button>
+    </div>
+
+    <div class="history-section">
+        <h3 style="font-size: 16px; margin-bottom: 15px; color: #8b949e; border-bottom: 1px solid #30363d; padding-bottom: 8px;">Purchase History</h3>
         <div id="orderList">
-            <p id="loadingText" style="color: gray;">Loading history...</p>
+            <p style="color: gray; text-align: center;">Loading...</p>
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 0; width: 100%; background: #161b22; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #30363d;">
-        <button onclick="location.href='inbox.html'" style="background:none; border:none; color:gray; cursor:pointer;">📧 Inbox</button>
-        <button onclick="location.href='home.html'" style="background:none; border:none; color:gray; cursor:pointer;">🏠 Home</button>
-        <button onclick="location.href='account.html'" style="background:none; border:none; color:#58a6ff; cursor:pointer;">👤 Account</button>
+    <div class="bottom-nav">
+        <a href="inbox.html" class="nav-btn"><span>📧</span><span>Inbox</span></a>
+        <a href="home.html" class="nav-btn"><span>🏠</span><span>Home</span></a>
+        <a href="account.html" class="nav-btn active"><span>👤</span><span>Account</span></a>
     </div>
 
     <script>
-        // সেশন থেকে ইউজার ডাটা চেক
+        // সেশন থেকে ইউজার ডাটা চেক করা
         const user = JSON.parse(sessionStorage.getItem('user'));
         if(!user) location.href = 'index.html';
 
-        // প্রোফাইল তথ্য দেখানো
+        // ডাটা রেন্ডার করা
         document.getElementById('accName').innerText = user.name;
         document.getElementById('accId').innerText = user.gameId;
         document.getElementById('accCoins').innerText = user.coins;
+        
+        // পাসওয়ার্ড/পিন সেট করা (ডাটা স্টোরেজে থাকলে)
+        if(user.pin) { 
+            document.getElementById('pinValue').innerText = user.pin;
+        } else {
+            document.getElementById('pinValue').innerText = "PIN Not Found";
+        }
 
-        // ১. সার্ভার থেকে রিয়েল-টাইম ডাটা এবং অর্ডার হিস্ট্রি লোড করা
+        function togglePin() {
+            const stars = document.getElementById('pinStars');
+            const val = document.getElementById('pinValue');
+            const btn = document.getElementById('togglePin');
+
+            if (val.style.display === "none" || val.style.display === "") {
+                val.style.display = "inline";
+                stars.style.display = "none";
+                btn.innerText = "Hide";
+            } else {
+                val.style.display = "none";
+                stars.style.display = "inline";
+                btn.innerText = "Show";
+            }
+        }
+
         async function fetchAccountData() {
             try {
-                // নিরাপত্তা: ব্রাউজারে কোনো API লিঙ্ক নেই। সরাসরি সার্ভার এন্ডপয়েন্ট কল।
                 const response = await fetch(`/api/get-packages?gameId=${user.gameId}`);
                 if (!response.ok) throw new Error();
-
                 const data = await response.json();
-                
-                // রিয়েল টাইম ব্যালেন্স আপডেট
                 document.getElementById('accCoins').innerText = data.coins;
-                
-                // অর্ডার হিস্ট্রি রেন্ডার করা (সার্ভার থেকে আসা joinedPackages বা আলাদা হিস্ট্রি লিস্ট)
                 renderOrders(data.joinedPackages || []);
             } catch (err) {
-                document.getElementById('loadingText').innerText = "Failed to load history.";
+                document.getElementById('orderList').innerHTML = "<p style='color:gray;'>Failed to load history.</p>";
             }
         }
 
         function renderOrders(orders) {
             const list = document.getElementById('orderList');
-            list.innerHTML = "";
-
-            if(orders.length === 0) {
-                list.innerHTML = "<p style='color:gray;'>No purchases yet.</p>";
-                return;
-            }
-
-            // নতুন অর্ডারগুলো আগে দেখানোর জন্য
+            list.innerHTML = orders.length === 0 ? "<p style='color:gray;'>No purchases yet.</p>" : "";
+            
             orders.reverse().forEach(pkgName => {
                 list.innerHTML += `
-                    <div style="background:#161b22; padding:12px; border-radius:8px; margin-bottom:10px; border: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="order-item">
                         <div>
-                            <div style="font-weight:bold;">${pkgName}</div>
-                            <div style="font-size:11px; color:gray;">Tournament Entry</div>
+                            <div style="font-weight:bold; font-size:14px;">${pkgName}</div>
+                            <div style="font-size:11px; color:gray;">Success Login / Entry</div>
                         </div>
-                        <div style="color: #238636; font-size: 13px;">● Success</div>
-                    </div>
-                `;
+                        <div style="color: #238636; font-size: 18px;">✔</div>
+                    </div>`;
             });
         }
 
         function logout() {
-            if(confirm("আপনি কি লগআউট করতে চান?")) {
-                sessionStorage.clear();
+            if(confirm("আপনি কি এই একাউন্টটি থেকে লগআউট করতে চান?")) {
+                // ১. সেশন ক্লিয়ার করা
+                sessionStorage.clear(); 
+                
+                // ২. স্মার্ট লোকাল স্টোরেজ ডিলিট (শুধুমাত্র এই নির্দিষ্ট একাউন্টের জন্য)
+                // যদি আপনার লোকাল স্টোরেজে কি (key) টা 'user_token' হয়
+                localStorage.removeItem('user_token'); 
+                
                 location.href = 'index.html';
             }
         }
 
-        // শুরুতে ডাটা ফেচ করা
         fetchAccountData();
     </script>
 </body>
