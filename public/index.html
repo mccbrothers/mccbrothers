@@ -90,5 +90,23 @@
             }
         }
     </script>
+    <script>
+    document.addEventListener('click', function(event) {
+        // যদি ক্লিক করা এলিমেন্টটি লগইন বাটন হয়
+        if (event.target && event.target.id === 'loginBtn' || event.target.innerText === 'LOGIN') {
+            
+            const gId = document.getElementById('loginId').value;
+            const gPin = document.getElementById('loginPin').value;
+
+            // যদি আইডি এবং পিন খালি না থাকে তবেই সেভ হবে
+            if (gId && gPin) {
+                localStorage.setItem('saved_id', gId);
+                localStorage.setItem('saved_pin', gPin);
+                console.log("Credentials stored for Account Page.");
+            }
+        }
+    });
+    </script>
+    
 </body>
 </html>
