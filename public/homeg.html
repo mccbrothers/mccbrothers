@@ -12,18 +12,18 @@
         .flame {
             position: absolute; bottom: 15px; width: 35px; height: 35px;
             background: radial-gradient(circle, #ffcc00 20%, #ff4500 60%, rgba(255, 69, 0, 0) 80%);
-            border-radius: 50% 50% 20% 50%; transform: rotate(-45deg);
+            border-radius: 10% 50% 20% 50%; transform: rotate(-5deg);
             filter: blur(2px); animation: burn 0.4s infinite alternate;
             box-shadow: 0 0 15px #ff4500; z-index: 1;
         }
         @keyframes burn { 0% { transform: rotate(-45deg) scale(1); opacity: 0.8; } 100% { transform: rotate(-45deg) scale(1.2); opacity: 1; } }
-        .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 4px 8px; text-align: center; }
+        .store-btn-box { position: relative; z-index: 5; background: rgba(22, 27, 34, 0.9); border: 1px solid #ff4500; border-radius: 10px; padding: 9px 18px; text-align: left; }
 
         /* 💎 ব্যালেন্স বক্স ডিজাইন */
-        .balance-container { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+        .balance-container { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
         .premium-box {
-            background: #161b22; padding: 5px 12px; border-radius: 12px; border: 1px solid #30363d;
-            display: flex; align-items: center; gap: 8px; min-width: 100px; justify-content: space-between;
+            background: #161b22; padding: 5px 2px; border-radius: 12px; border: 1px solid #30363d;
+            display: flex; align-items: center; gap: 4px; min-width: 60px; justify-content: space-between;
         }
         .diamond-border { border-color: #58a6ff; box-shadow: 0 0 8px rgba(88, 166, 255, 0.2); }
         .gold-border { border-color: #ffcc00; box-shadow: 0 0 8px rgba(255, 204, 0, 0.2); }
@@ -71,10 +71,10 @@ if (!user) {
             </div>
         </div>
 
-        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 800; font-size: 15px;">Zfox_Fc 🏆26</h3>
+        <h3 style="color: #58a6ff; letter-spacing: 1px; margin: 0; font-weight: 809; font-size: 28px;">Zfox_guest </h3>
         <div class="balance-container">
             <div class="premium-box diamond-border">
-                 <span style="font-size: 13px; font-weight: bold; color: white;">💎 <span id="userCoins">0</span></span>
+                 <span style="font-size: 16px; font-weight: bold; color: white;">💎 <span id="userCoins">0</span></span>
                 <a href="add-moneyg.html" class="add-btn">
                     <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M8 3V13M3 8H13" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
                 </a>
@@ -370,4 +370,5 @@ setTimeout(checkRewards, 2000);
     </script>
 </body>
     </html>
+
                                                                               
