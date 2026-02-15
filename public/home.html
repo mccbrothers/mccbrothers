@@ -129,88 +129,126 @@
             } catch (err) { console.error("Sync Error:", err); }
         }
 
-        // --- স্মার্ট ব্যানার ফাংশন (Session Controlled) ---
-        async function fetchBannerFromSheet() {
-            // যদি ইউজার এই সেশনে একবার ব্যানার কেটে দেয়, তবে আর চেক করবে না
-            if (sessionStorage.getItem('bannerDismissed') === 'true') return;
+     // নতুন এই কোডটি বসান:
+let bannerQueue = []; 
 
-            try {
-                const sheetUrl = "https://docs.google.com/spreadsheets/d/1jrwIZvzegH-bHAZx1SVCCzgn10HHLpFy2sEltx9PrUM/gviz/tq?tqx=out:csv&sheet=sheet1";
-                const response = await fetch(sheetUrl);
-                const csvText = await response.text();
-                const rows = csvText.split('\n').map(row => row.split(',').map(cell => cell.replace(/"/g, '')));
-                
-                const status = rows[1][0];
-                const imageUrl = rows[1][1];
-                const linkUrl = rows[1][2];
+async function fetchBannerFromSheet() {
+    // যদি এই সেশনে সব ব্যানার দেখা হয়ে গিয়ে থাকে, তবে আর চেক করবে না
+    if (sessionStorage.getItem('bannerDismissed') === 'true') return;
 
-                if (status === "active") {
-                    showBannerPopup(imageUrl, linkUrl);
-                }
-            } catch (error) { console.log("Banner fetch error"); }
+    try {
+        const sheetUrl = "https://docs.google.com/spreadsheets/d/1jrwIZvzegH-bHAZx1SVCCzgn10HHLpFy2sEltx9PrUM/gviz/tq?tqx=out:csv&sheet=sheet1";
+        const response = await fetch(sheetUrl);
+        const csvText = await response.text();
+        
+        // CSV ডাটাকে রো হিসেবে সাজানো
+        const rows = csvText.split('\n').map(row => row.split(',').map(cell => cell.replace(/"/g, '').trim()));
+
+        bannerQueue = []; 
+        // ২য় সারি (Index 1) থেকে শুরু করে শেষ পর্যন্ত সব চেক করা
+        for (let i = 1; i < rows.length; i++) {
+            const status = rows[i][0];
+            const imageUrl = rows[i][1];
+            const linkUrl = rows[i][2];
+
+            // যদি স্ট্যাটাস active থাকে এবং ইমেজ লিঙ্ক থাকে তবে তালিকায় যোগ করো
+            if (status === "active" && imageUrl) {
+                bannerQueue.push({ img: imageUrl, link: linkUrl });
+            }
         }
 
-        function showBannerPopup(img, link) {
-            // যদি অলরেডি পপআপ স্ক্রিনে থাকে, তবে আবার বানাবে না
-            if(document.getElementById('sheetBannerPopup')) return;
+        // যদি কিউতে ব্যানার থাকে এবং স্ক্রিনে কোনো ব্যানার না থাকে তবে দেখাও
+        if (bannerQueue.length > 0 && !document.getElementById('sheetBannerPopup')) {
+            showNextBanner();
+        }
+    } catch (error) { 
+        console.log("Banner fetch error", error); 
+    }
+}
+
+function showNextBanner() {
+    if (bannerQueue.length === 0) return;
+
+    const currentBanner = bannerQueue[0];
+    const bannerHtml = `
+    <div id="sheetBannerPopup" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center;">
+        <div style="position:relative; width:85%; max-width:320px; border-radius:15px; border:2px solid #ffcc00; box-shadow:0 0 25px rgba(255, 204, 0, 0.4); overflow:hidden; background:#161b22; animation: pop 0.4s ease-out;">
             
-            const bannerHtml = `
-            <div id="sheetBannerPopup" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:10000; display:flex; justify-content:center; align-items:center;">
-                <div style="position:relative; width:85%; max-width:320px; border-radius:15px; border:2px solid #ffcc00; box-shadow:0 0 25px rgba(255, 204, 0, 0.4); overflow:hidden; background:#161b22; animation: pop 0.4s ease-out;">
-                    
-                    <button onclick="dismissBanner()" 
-                        style="position:absolute; top:8px; right:8px; background:rgba(248, 81, 73, 0.9); color:white; border:none; width:26px; height:26px; border-radius:50%; font-weight:bold; cursor:pointer; z-index:10001; font-size:12px; display:flex; align-items:center; justify-content:center;">✕</button>
-                    
-                    <img src="${img}" onclick="if('${link}') window.location.href='${link}'" style="width:100%; display:block; cursor:pointer;">
-                </div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', bannerHtml);
-        }
+            <button onclick="dismissBanner()" 
+                style="position:absolute; top:8px; right:8px; background:rgba(248, 81, 73, 0.9); color:white; border:none; width:26px; height:26px; border-radius:50%; font-weight:bold; cursor:pointer; z-index:10001; font-size:12px; display:flex; align-items:center; justify-content:center;">✕</button>
+            
+            <img src="${currentBanner.img}" onclick="if('${currentBanner.link}') window.location.href='${currentBanner.link}'" style="width:100%; display:block; cursor:pointer;">
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', bannerHtml);
+}
 
-        function dismissBanner() {
-            const popup = document.getElementById('sheetBannerPopup');
-            if (popup) popup.remove();
-            // সেশনে সেভ করে রাখা যাতে এইবার আর না দেখায়
-            sessionStorage.setItem('bannerDismissed', 'true');
-        }
+function dismissBanner() {
+    const popup = document.getElementById('sheetBannerPopup');
+    if (popup) popup.remove();
+
+    // তালিকা থেকে প্রথম ব্যানারটি মুছে ফেলা (যেটা ইউজার কেটে দিয়েছে)
+    bannerQueue.shift();
+
+    // যদি আরও ব্যানার থাকে তবে ০.৪ সেকেন্ড পর সেটি দেখাও
+    if (bannerQueue.length > 0) {
+        setTimeout(showNextBanner, 400); 
+    } else {
+        // সব ব্যানার দেখা শেষ হলে সেশন মার্ক করে রাখা
+        sessionStorage.setItem('bannerDismissed', 'true');
+    }
+}
 
         // বাকি টুর্নামেন্ট লজিক
         function renderMatches(joinedIds) {
             const list = document.getElementById('tournamentList');
             list.innerHTML = "";
             timers.forEach(t => clearInterval(t));
+// এই নতুন অংশটি যোগ করুন
+allPackages.forEach((pkg, index) => {
+    if (pkg.Title.toLowerCase().includes("ludo")) return;
+    
+    const isJoined = joinedIds.includes(pkg.Match_ID) || joinedIds.includes(pkg.Title);
+    const total = parseInt(pkg.Total_Slots) || 48;
+    const joined = parseInt(pkg.Joined_Players) || 0;
+    const isFull = joined >= total;
+    const timerId = `timer-${index}`;
+    const matchImg = pkg.img || "https://placehold.co/600x300/161b22/58a6ff?text=No+Image";
+    
+    // 🔥 স্মার্ট সার্ভার লজিক: যদি Game_Link থাকে তবে সেটি গেম, না থাকলে টুর্নামেন্ট
+    const isGame = pkg.Game_Link && pkg.Game_Link.trim() !== "";
 
-            allPackages.forEach((pkg, index) => {
-                if (pkg.Title.toLowerCase().includes("ludo")) return;
-                const isJoined = joinedIds.includes(pkg.Match_ID) || joinedIds.includes(pkg.Title);
-                const total = parseInt(pkg.Total_Slots) || 48;
-                const joined = parseInt(pkg.Joined_Players) || 0;
-                const isFull = joined >= total;
-                const timerId = `timer-${index}`;
-                const matchImg = pkg.img || "https://placehold.co/600x300/161b22/58a6ff?text=No+Image";
-                const isGame = pkg.Type === "Game";
-                
-                const actionButton = isGame 
-                    ? `<button onclick="window.location.href='game.html'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`
-                    : (isJoined ? `<span class="applied-tag">Applied ✅</span>` : (isFull ? `<span class="full-tag">FULL 🚫</span>` : `<button onclick="openM('${pkg.Match_ID || pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">JOIN NOW</button>`));
+    let actionButton;
+    if (isGame) {
+        // গেমের জন্য সরাসরি অ্যাকশন
+        actionButton = `<button onclick="window.location.href='${pkg.Game_Link}'" style="background:linear-gradient(45deg, #58a6ff, #00d2fc); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">PLAY NOW</button>`;
+    } else {
+        // টুর্নামেন্টের জন্য কন্ডিশনাল বাটন
+        actionButton = isJoined 
+            ? `<span class="applied-tag">Applied ✅</span>` 
+            : (isFull ? `<span class="full-tag">FULL 🚫</span>` : `<button onclick="openM('${pkg.Match_ID || pkg.Title}')" style="background:linear-gradient(45deg, #238636, #2ea043); color:white; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">JOIN NOW</button>`);
+    }
 
-                list.innerHTML += `
-                    <div class="match-card">
-                        ${!isGame ? `<div id="${timerId}" class="timer-badge">Loading...</div>` : `<div class="timer-badge" style="color:#00d2fc; border-color:#00d2fc;">Play Anytime</div>`}
-                        <img src="${matchImg}" class="match-banner" alt="Game Image">
-                        <div class="card-content">
-                            <h3 style="margin: 0; color: #58a6ff;">${pkg.Title}</h3>
-                            <p style="font-size: 12px; color: gray; margin: 8px 0;">
-                                ${isGame ? `🎮 Interactive Minesweeper Game` : `👥 Players: <span style="color:white; font-weight:bold;">${joined}/${total}</span>`}
-                            </p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                                <div style="font-weight:bold; color:#fff; font-size: 15px;">Min: ${pkg.Fee} 💎</div>
-                                ${actionButton}
-                            </div>
-                        </div>
-                    </div>`;
-                if (!isGame && pkg.Time) startTimer(pkg.Time, timerId);
-            });
+    list.innerHTML += `
+        <div class="match-card">
+            ${!isGame ? `<div id="${timerId}" class="timer-badge">Loading...</div>` : `<div class="timer-badge" style="color:#00d2fc; border-color:#00d2fc;">Play Anytime</div>`}
+            <img src="${matchImg}" class="match-banner" alt="Game Image">
+            <div class="card-content">
+                <h3 style="margin: 0; color: #58a6ff;">${pkg.Title}</h3>
+                <p style="font-size: 12px; color: gray; margin: 8px 0;">
+                    ${isGame ? `🎮 Web Interactive Game` : `👥 Players: <span style="color:white; font-weight:bold;">${joined}/${total}</span>`}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <div style="font-weight:bold; color:#fff; font-size: 15px;">Fee: ${pkg.Fee} 💎</div>
+                    ${actionButton}
+                </div>
+            </div>
+        </div>`;
+        
+    if (!isGame && pkg.Time) startTimer(pkg.Time, timerId);
+});
+
+            
         }
 
         function startTimer(targetTime, elementId) {
@@ -272,4 +310,5 @@
         setTimeout(fetchBannerFromSheet, 3000);
     </script>
 </body>
-</html>
+    </html>
+            
